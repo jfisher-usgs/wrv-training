@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Scenario 2</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="site_libs/highlight/textmate.css"
+      type="text/css" />
+<script src="site_libs/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css\styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">WRV Training</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Overview</a>
+</li>
+<li>
+  <a href="r-prog.html">R-Programming</a>
+</li>
+<li>
+  <a href="calib-model.html">Calibrated Model</a>
+</li>
+<li>
+  <a href="scenario2.html">Scenario 2</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Scenario 2</h1>
+
+</div>
+
+
+<p>Something</p>
+<div id="workflow" class="section level2">
+<h2>workflow</h2>
+<ol style="list-style-type: decimal">
+<li><p>A “baseline” simulation is generated by running the WRV model with the historic water budget from model calibration (we’ve already completed this step)</p></li>
+<li><p>Stresses are added to the historic water budget and the WRV model is run again with the revised MODFLOW Well file (“*.wel“)</p></li>
+<li><p>Results from the scenario simulation and the baseline simulation are differenced to find the predicted change in flux or head</p></li>
+</ol>
+</div>
+<div id="description" class="section level2">
+<h2>Description</h2>
+<p>Something</p>
+<ul>
+<li><p>Voluntary idle a section of irrigated land (~600 acres, see figure below) during 1995–2010)</p></li>
+<li><p>Modify several model-input files used to calculate aquifer recharge and withdrawals</p></li>
+<li><p>Use R script to calculate aquifer recharge and withdrawals and build a new MODFLOW Well file (“*.wel“)</p></li>
+<li><p>Run simulation and post-process results using R</p></li>
+</ul>
+<p><img src="images/scenario2-desc_01.png" /></p>
+<div id="changes-to-unprocessed-data-files" class="section level3">
+<h3>Changes to unprocessed-data files</h3>
+<ul>
+<li><p>Irrigated lands shapefiles—change status of parcel to “non-irrigated”</p></li>
+<li><p>Evapotranspiration (ET) rasters, reduce ET within parcel to equal monthly precipitation during irrigation season</p></li>
+<li><p>Remove associated pumping wells from input files: “pod.gw.csv”, “pod.wells”, “comb.sw.irr.csv”</p></li>
+<li>Files that don’t need to be changed for this scenario, but might for similar scenarios:
+<ul>
+<li>“Div.sw.csv”—we are assuming surface water associated with the parcel is now delivered to other junior users within the same canal service area</li>
+<li>“Div.gw.csv”—if there had been <em>measured</em> groundwater diversions associated with the parcel, those would need to be deleted</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="create-datasets" class="section level2">
+<h2>Create Datasets</h2>
+<p>Something</p>
+<div id="level-1-data" class="section level3">
+<h3>Level 1 Data</h3>
+<p>Something</p>
+<div id="creating-datasets-preamble" class="section level4">
+<h4>Creating datasets preamble</h4>
+<p>Read text file for Appendix C R-source code and parse and evaluate the preamble in the current R session.</p>
+<pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixC.R&quot;, package = &quot;wrv&quot;)
+app.a.src &lt;- readLines(file)
+eval(parse(text = app.a.src[1:(grep(&quot;DownloadFile&quot;, app.a.src)[1] - 1L)]))</code></pre>
+</div>
+<div id="combined-surface-water-irrigation-diversions-comb.sw.irr" class="section level4">
+<h4>Combined surface-water irrigation diversions (comb.sw.irr)</h4>
+<p>Read text file for combined surface-water irrigation diversions and write its external representation as an R object in “data/comb.sw.irr.rda”.</p>
+<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/comb.sw.irr.csv&quot;)
+comb.sw.irr &lt;- read.csv(file, strip.white = TRUE)
+comb.sw.irr$Pdate &lt;- as.Date(comb.sw.irr$Pdate, format = &quot;%m/%d/%Y&quot;)
+comb.sw.irr$MaxDivRate &lt;- comb.sw.irr$MaxDivRate * cfs.to.m3.per.d
+save(comb.sw.irr, file = file.path(dir.dat, &quot;comb.sw.irr.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+<div id="points-of-diversion-for-groundwater-pod.gw" class="section level4">
+<h4>Points of diversion for groundwater (pod.gw)</h4>
+<p>Read text file for points of diversion for groundwater and write its external representation as an R object in “data/pod.gw.csv.rda”.</p>
+<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/pod.gw.csv&quot;)
+d &lt;- read.csv(file, strip.white = TRUE, stringsAsFactors = FALSE)
+d$Pdate &lt;- as.Date(d$PriorityDa, format = &quot;%m/%d/%Y&quot;)
+d$IrrRate &lt;- d$IRRcfs * cfs.to.m3.per.d
+columns &lt;- c(&quot;WMISNumber&quot;, &quot;WaterRight&quot;, &quot;EntityName&quot;, &quot;EntitySrce&quot;, &quot;Pdate&quot;, &quot;IrrRate&quot;)
+pod.gw &lt;- d[, columns]
+save(pod.gw, file = file.path(dir.dat, &quot;pod.gw.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+<div id="well-completions-pod.wells" class="section level4">
+<h4>Well completions (pod.wells)</h4>
+<p>Read the point-shapefile file for well completions and initialize new variable in its embedded data table.</p>
+<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/pod.wells.zip&quot;)
+unzip(file, exdir=tempdir())
+layer &lt;- sub(&quot;.zip$&quot;, &quot;&quot;, basename(file))
+pod.wells &lt;- readOGR(dsn = tempdir(), layer = layer, verbose = FALSE)
+pod.wells &lt;- spTransform(pod.wells, crs)
+d &lt;- pod.wells@data
+columns &lt;- c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
+d[, columns] &lt;- d[, columns] * ft.to.m
+d[d$TopOpen1 == 0 | d$BotOpen1 == 0, c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;)] &lt;- NA
+d[d$TopOpen2 == 0 | d$BotOpen2 == 0, c(&quot;TopOpen2&quot;, &quot;BotOpen2&quot;)] &lt;- NA</code></pre>
+<p>A missing well completion is assumed identical to the completion of its nearest-neighbor well.</p>
+<pre class="r"><code>is.pred &lt;- is.na(d$TopOpen1)
+dists &lt;- as.matrix(dist(coordinates(pod.wells)))
+dists &lt;- dists[!is.pred &amp; d$WellUse %in% &quot;Irrigation&quot;, ]
+nearest.well &lt;- as.integer(apply(dists, 2, function(i) names(which.min(i))))
+d$TopOpen1[is.pred] &lt;- d$TopOpen1[nearest.well[is.pred]]
+d$BotOpen1[is.pred] &lt;- d$BotOpen1[nearest.well[is.pred]]
+columns &lt;- c(&quot;WMISNumber&quot;, &quot;WellUse&quot;, &quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
+pod.wells@data &lt;- d[, columns]</code></pre>
+<p>Write its external representation as an R object in “data/pod.wells.rda”.</p>
+<pre class="r"><code>save(pod.wells, file = file.path(dir.dat, &quot;pod.wells.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+<div id="irrigation-lands-irr.lands" class="section level4">
+<h4>Irrigation lands (irr.lands)</h4>
+<p>Irrigated and semi-irrigated lands of the WRV.</p>
+<p>Read polygon shapefiles for irrigated and semi-irrigated lands and write its external representation as an R object in “data/irr.lands.rda”.</p>
+<pre class="r"><code>files &lt;- list.files(file.path(getwd(), &quot;extdata/irr&quot;), full.names = TRUE)
+yr &lt;- gsub(&quot;[^0-9]&quot;, &quot;&quot;, files)
+irr.lands &lt;- list()
+for (i in seq_along(files)) {
+  unzip(files[i], exdir=tempdir())
+  layer &lt;- sub(&quot;.zip$&quot;, &quot;&quot;, basename(files[i]))
+  p &lt;- readOGR(dsn = tempdir(), layer = layer, verbose = FALSE)
+  p &lt;- spTransform(p, crs)
+  p@data &lt;- p@data[, paste0(&quot;STATUS_&quot;, substr(yr[i], 1, 3)), drop = FALSE]
+  names(p@data) &lt;- &quot;Status&quot;
+  p &lt;- p[p@data[, &quot;Status&quot;] != &quot;non-irrigated&quot;, ]
+  p &lt;- rgeos::gBuffer(p, width = 0, byid = TRUE)
+  p@data &lt;- droplevels(p@data)
+  irr.lands[[i]] &lt;- p
+}
+names(irr.lands) &lt;- as.character(yr)
+save(irr.lands, file = file.path(dir.dat, &quot;irr.lands.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+<div id="evapotranspiration-et" class="section level4">
+<h4>Evapotranspiration (et)</h4>
+<p>Read raster files for evapotranspiration (ET) and average by month.</p>
+<pre class="r"><code>files &lt;- list.files(file.path(getwd(), &quot;extdata/et&quot;), full.names = TRUE)
+FUN &lt;- function(i) {
+  r &lt;- readGDAL(i, band = 1, silent = TRUE)
+  raster::crs(r) &lt;- crs
+  r[[1]] &lt;- r[[1]] * mm.to.m
+  return(r)
+}
+et.raw &lt;- lapply(files, FUN)
+names(et.raw) &lt;- as.character(yr.mo)</code></pre>
+<p>Project the raster data into the model grid, and place an upper and lower limit on ET that is 3 standard deviations from the mean value.</p>
+<pre class="r"><code>high.res.spatial.grid &lt;- disaggregate(spatial.grid, fact = 5L)
+is.missing &lt;- is.na(wrv::alluvium.thickness)
+FUN &lt;- function(i) {
+  r &lt;- aggregate(projectRaster(raster(i), high.res.spatial.grid), fact = 5L)
+  r[is.missing] &lt;- NA
+  upper.limit &lt;- mean(r[], na.rm = TRUE) + sd(r[], na.rm = TRUE) * 3
+  r[r &gt; upper.limit] &lt;- upper.limit
+  return(round(r, digits = 6))
+}
+et &lt;- stack(lapply(et.raw, FUN), quick = TRUE)
+names(et) &lt;- as.character(yr.mo)</code></pre>
+<p>Write its external representation as an R object in “data/et.rda”.</p>
+<pre class="r"><code>save(et, file = file.path(dir.dat, &quot;et.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+</div>
+<div id="level-2-data" class="section level3">
+<h3>Level 2 Data</h3>
+<p>Something</p>
+<div id="monthly-irrigation-entity-components-entity.components" class="section level4">
+<h4>Monthly irrigation entity components (entity.components)</h4>
+<p>Irrigation entities and their components in the WRV and surrounding areas. An irrigation entity is defined as an area served by a group of surface-water and/or groundwater diversion(s). Start with the spatial polygon representing the irrigated lands and remove those areas that are designated as wetlands or public parcels. Intersect the resulting polygon with the irrigation entities and calculate the area for each entity.</p>
+<pre class="r"><code>p &lt;- irr.lands
+p &lt;- lapply(p, function(i) inlmisc::SetPolygons(i, wrv::wetlands, &quot;gDifference&quot;, 0.001))
+p &lt;- lapply(p, function(i) inlmisc::SetPolygons(i, wrv::public.parcels, &quot;gDifference&quot;, 0.001))
+p &lt;- lapply(p, function(i) inlmisc::SetPolygons(wrv::irr.entities, i, &quot;gIntersection&quot;, 0.001))
+for (i in seq_along(p)) p[[i]]@data$area &lt;- rgeos::gArea(p[[i]], byid = TRUE)
+irr.by.entity &lt;- p</code></pre>
+<p>Irrigation entities are subdivided by water source; that is, “surface-water only”, “groundwater only”, or “mixed source”. Aggregate irrigation entities by water source and calculate their area.</p>
+<pre class="r"><code>FUN &lt;- function(i) {
+  d &lt;- aggregate(i@data$area, by = list(i@data$EntitySrce), sum, na.rm = TRUE)
+  names(d) &lt;- c(&quot;EntitySrce&quot;, &quot;area&quot;)
+  FUN &lt;- function(j) as.character(i@data$PrecipZone[i@data$EntitySrce == j][1])
+  d$PrecipZone &lt;- as.factor(vapply(d$EntitySrce, FUN, &quot;&quot;))
+  return(d)
+}
+area.by.entity &lt;- lapply(irr.by.entity, FUN)</code></pre>
+<p>Calculate the volumetric components of evapotranspiration, precipitation, and crop irrigation requirement for each irrigation entity and water source.</p>
+<pre class="r"><code>FUN &lt;- function(i) {
+  yr &lt;- wrv::irr.lands.year$IL_Year[wrv::irr.lands.year$Year %in% substr(i, 1, 4)]
+  p &lt;- irr.by.entity[[yr]]
+  unique.sources &lt;- sort(unique(as.character(p@data$EntitySrce)))
+  FUN &lt;- function (j) {
+    x &lt;- rgeos::gUnaryUnion(p[p@data$EntitySrce == j, ])@polygons[[1]]
+    slot(x, &quot;ID&quot;) &lt;- j
+    return(x)
+  }
+  sp &lt;- SpatialPolygons(lapply(unique.sources, FUN), proj4string = crs(et.raw[[i]]))
+  p &lt;- over(sp, et.raw[[i]], fn = mean, na.rm = TRUE)
+  d &lt;- as.data.frame(list(EntitySrce = rownames(p), mean.et = p[, 1]))
+  d &lt;- suppressWarnings(dplyr::left_join(d, area.by.entity[[yr]], by = &quot;EntitySrce&quot;))
+  d$et.vol &lt;- d$mean.et * d$area
+  d$precip.vol &lt;- NA
+  for (j in levels(d$PrecipZone)) {
+    is.in.zone &lt;- d$PrecipZone == j
+    idx &lt;- which(wrv::precipitation$YearMonth == i &amp; wrv::precipitation$PrecipZone == j)
+    d$precip.vol[is.in.zone] &lt;- d$area[is.in.zone] * wrv::precipitation$Precip[idx]
+  }
+  d$cir.vol &lt;- d$et.vol - d$precip.vol
+  idxs &lt;- match(d$EntitySrce, wrv::irr.entities@data$EntitySrce)
+  d[, c(&quot;EntityName&quot;, &quot;Source&quot;)] &lt;- wrv::irr.entities@data[idxs, c(&quot;EntityName&quot;, &quot;Source&quot;)]
+  rownames(d) &lt;- d$EntitySrce
+  return(SpatialPolygonsDataFrame(sp, d))
+}
+entity.components &lt;- lapply(yr.mo, FUN)
+names(entity.components) &lt;- yr.mo</code></pre>
+<p>Write its external representation as an R object in “data/entity.components.rda”.</p>
+<pre class="r"><code>save(entity.components, file = file.path(dir.dat, &quot;entity.components.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+</div>
+</div>
+</div>
+
+<div id="page-footer">
+  <p>This information is preliminary and is subject to revision.
+    It is being provided to meet the need for timely best science.
+    The information is provided on the condition that neither the
+    U.S. Geological Survey (USGS) nor the U.S. Government shall be held liable for
+    any damages resulting from the authorized or unauthorized use of this information.
+    The content is in the public domain because it contains materials that
+    originally came from the USGS, an agency of the United States Department of Interior.
+    For more information, see the
+    <a href="https://www2.usgs.gov/visual-id/credit_usgs.html#copyright/">official USGS copyright policy</a>.
+  </p>
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+
+</body>
+</html>

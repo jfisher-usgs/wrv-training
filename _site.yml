@@ -1,0 +1,27 @@
+name: "wrv-training"
+navbar:
+  title: "WRV Training"
+  type: default
+  left:
+    - text: "Overview"
+      href: index.html
+    - text: "R-Programming"
+      href: r-prog.html
+    - text: "Calibrated Model"
+      href: calib-model.html
+    - text: "Scenario 2"
+      href: scenario2.html
+
+output_dir: "."
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+        collapsed: false
+    theme: paper
+    highlight: textmate
+    mathjax: null
+    include:
+      after_body: footer.html
+    css: css/styles.css
