@@ -310,33 +310,27 @@ div.tocify {
 </div>
 
 
-<div id="scenario-description" class="section level2">
-<h2>Scenario Description</h2>
-<p>Something</p>
-<ul>
-<li><p>Voluntary idle a section of irrigated land (~600 acres, see figure below) during 1995–2010)</p></li>
-<li><p>Modify several model-input files used to calculate aquifer recharge and withdrawals</p></li>
-<li><p>Use R script to calculate aquifer recharge and withdrawals and build a new MODFLOW Well file (“*.wel“)</p></li>
-<li><p>Run simulation and post-process results using R</p></li>
-</ul>
+<div id="description" class="section level2">
+<h2>Description</h2>
+<p>This example scenario describes a transient simulation (1995–2010) of the calibrated model converting an existing parcel of irrigated land to non-irrigated status; that is, the parcel is voluntarily allowed to go idle. The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:</p>
 <p><img src="images/scenario2-desc_01.png" /></p>
-<div id="changes-to-unprocessed-data-files" class="section level3">
-<h3>Changes to Unprocessed-Data Files</h3>
+<p>Changes to unprocessed-data files include:</p>
 <ul>
-<li><p>Irrigated lands shapefiles—change status of parcel to “non-irrigated”</p></li>
-<li><p>Evapotranspiration (ET) rasters, reduce ET within parcel to equal monthly precipitation during irrigation season</p></li>
-<li><p>Remove associated pumping wells from input files: “pod.gw.csv”, “pod.wells”, “comb.sw.irr.csv”</p></li>
-<li>Files that don’t need to be changed for this scenario, but might for similar scenarios:
-<ul>
-<li>“Div.sw.csv”—we are assuming surface water associated with the parcel is now delivered to other junior users within the same canal service area</li>
-<li>“Div.gw.csv”—if there had been <em>measured</em> groundwater diversions associated with the parcel, those would need to be deleted</li>
-</ul></li>
+<li><p>Irrigated lands (“extdata/irr/irr.lands.&lt;YYYY&gt;.zip”)—changed parcel status to “non-irrigated”.</p></li>
+<li><p>Evapotranspiration (ET)(“extdata/et/et.&lt;YYYMM&gt;.tif”)—reduced ET within the parcel and set equal to the monthly precipitation during the irrigation season.</p></li>
+<li><p>Combined surface-water irrigation diversions (“extdata/div/comb.sw.irr.csv”)–removed diversions associated with wells in parcel.</p></li>
+<li><p>Groundwater points of diversion (“extdata/div/pod.gw.csv”)—removed diversions for wells in parcel.</p></li>
+<li><p>Well sites (“extdata/div/pod.wells.zip”)—removed sites located in parcel.</p></li>
 </ul>
-</div>
+<p>Files that did not need to be modified for this scenario, but may want to consider modifying for similar model scenarios include:</p>
+<ul>
+<li><p>Surface water diversions (“div.sw.csv”)—we assumed surface water associated with the idled parcel is now delivered to other junior users within the same canal service area.</p></li>
+<li><p>Groundwater diversions (“div.gw.csv”)—if there had been <em>measured</em> groundwater diversions associated with the parcel, those would need to be removed.</p></li>
+</ul>
 </div>
 <div id="create-datasets" class="section level2">
 <h2>Create Datasets</h2>
-<p>Because we’re not re-creating all datasets in the <em>wrv</em> package, we need the unmodified datasets to be loaded into our R session. To do so, we use the following code syntax <code>wrv::&lt;name.of.dataset&gt;</code>.</p>
+<p>The R script for creating the modified datasets (shown in code blocks) is primarily based on embedded R code in appendix C. It was necessary to alter the path names to the modified unprocessed-data files. Because we’re not re-creating all datasets in the <em>wrv</em> package, we needed to be able to access the unmodified package datasets; to do so, we used the following code syntax <code>wrv::&lt;name.of.dataset&gt;</code> to gain access to these datasets.</p>
 <div id="level-1-data" class="section level3">
 <h3>Level 1 Data</h3>
 <p>Datasets processed at level 1.</p>
@@ -345,7 +339,7 @@ div.tocify {
 <p>Read text file for Appendix C R-source code and parse and evaluate the preamble in the current R session.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixC.R&quot;, package = &quot;wrv&quot;)
 app.c.r &lt;- readLines(file)
-eval(parse(text = app.c.r[1:(grep(&quot;DownloadFile&quot;, app.c.r)[1] - 1L)]))</code></pre>
+eval(parse(text = app.c.r[1:(grep(&quot;DownloadFile&quot;, app.c.r)[1] - 1)]))</code></pre>
 </div>
 <div id="combined-surface-water-irrigation-diversions-comb.sw.irr" class="section level4">
 <h4>Combined surface-water irrigation diversions (comb.sw.irr)</h4>
@@ -496,20 +490,54 @@ names(entity.components) &lt;- yr.mo</code></pre>
 </div>
 </div>
 </div>
-<div id="scenario-description-1" class="section level2">
-<h2>Scenario Description</h2>
+<div id="process-model" class="section level2">
+<h2>Process Model</h2>
+<p>Something</p>
+<div id="pre-processing" class="section level3">
+<h3>Pre-processing</h3>
+<p>Something</p>
 <pre class="r"><code>rm(list = ls())
 files &lt;- list.files(file.path(getwd(), &quot;data&quot;), patter = &quot;*.rda$&quot;, full.names = TRUE)
 for (i in files) load(i)</code></pre>
+<p>Something</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
 app.d.r &lt;- readLines(file)
 app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]</code></pre>
-<pre class="r"><code>line &lt;- grep(&quot;## ----run-water-balance&quot;, app.d.r)
+<p>Something</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----write_modflow_input&quot;, app.d.r)
+eval(parse(text = app.d.r[1:line]))
+app.d.r &lt;- app.d.r[-(1:line)]
+line &lt;- grep(&quot;## ----&quot;, app.d.r)[1] - 1
+app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
+<p>Something</p>
+<pre class="r"><code>id &lt;- &quot;wrv_mfusg&quot;
+dir.run &lt;- file.path(getwd(), &quot;model&quot;)</code></pre>
+<p>Something</p>
+<pre class="r"><code>WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
+                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
+                  ntime.steps = ntime.steps, verbose = FALSE)</code></pre>
+<p>Something</p>
+<pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip&quot;
+file &lt;- file.path(tempdir(), basename(file))
+download.file(url, file)
+files &lt;- unzip(file, exdir = tempdir())
+file.copy(files[grep(&quot;\\.ref$&quot;, files)], dir.run, overwrite = TRUE)</code></pre>
+</div>
+<div id="run-model" class="section level3">
+<h3>Run model</h3>
+<p>Something</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----read_budget&quot;, app.d.r)
+eval(parse(text = app.d.r[1:line]))</code></pre>
+</div>
+<div id="post-processing" class="section level3">
+<h3>Post-processing</h3>
+<p>Something</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----read_budget&quot;, app.d.r)
+app.d.r &lt;- app.d.r[-(1:line)]
+line &lt;- grep(&quot;## ----graph_budget&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))
 app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
-<pre class="r"><code>l &lt;- RunWaterBalance(rs.model[[&quot;lay1.bot&quot;]], tr.stress.periods, ss.stress.periods, efficiency=efficiency,
-                     canal.seep=canal.seep, comb.sw.irr = comb.sw.irr,
-                     entity.components = entity.components, et = et, pod.gw = pod.gw)</code></pre>
+</div>
 </div>
 
 <div id="page-footer">

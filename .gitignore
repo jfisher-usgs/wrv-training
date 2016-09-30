@@ -4,3 +4,4 @@
 __packages
 *_rdb
 *_rdx
+model/**

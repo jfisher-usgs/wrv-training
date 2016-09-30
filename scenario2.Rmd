@@ -6,47 +6,46 @@ title: "Scenario 2"
 knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
 ```
 
-## Scenario Description
+## Description
 
-Something
-
-* Voluntary idle a section of irrigated land (~600 acres, see figure below) during 1995--2010)
-
-* Modify several model-input files used to calculate aquifer recharge and withdrawals
-
-* Use R script to calculate aquifer recharge and withdrawals and build a new MODFLOW Well file ("*.wel")
-
-* Run simulation and post-process results using R
+This example scenario describes a transient simulation (1995--2010) of the calibrated model
+converting an existing parcel of irrigated land to non-irrigated status;
+that is, the parcel is voluntarily allowed to go idle.
+The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:
 
 | ![](images/scenario2-desc_01.png)
 
+Changes to unprocessed-data files include:
 
+* Irrigated lands ("extdata/irr/irr.lands.\<YYYY\>.zip")---changed parcel status to "non-irrigated".
 
+* Evapotranspiration (ET)("extdata/et/et.\<YYYMM\>.tif")---reduced ET within the parcel
+  and set equal to the monthly precipitation during the irrigation season.
 
+* Combined surface-water irrigation diversions ("extdata/div/comb.sw.irr.csv")--removed
+  diversions associated with wells in parcel.
 
-### Changes to Unprocessed-Data Files
+* Groundwater points of diversion ("extdata/div/pod.gw.csv")---removed diversions for wells in parcel.
 
-* Irrigated lands shapefiles---change status of parcel to "non-irrigated"
+* Well sites ("extdata/div/pod.wells.zip")---removed sites located in parcel.
 
-* Evapotranspiration (ET) rasters, reduce ET within parcel to
-  equal monthly precipitation during irrigation season
+Files that did not need to be modified for this scenario,
+but may want to consider modifying for similar model scenarios include:
 
-* Remove associated pumping wells from input files: "pod.gw.csv", "pod.wells", "comb.sw.irr.csv"
+  * Surface water diversions ("div.sw.csv")---we assumed surface water associated
+    with the idled parcel is now delivered to other junior users within the same canal service area.
 
-* Files that don't need to be changed for this scenario, but might for similar scenarios:
-    * "Div.sw.csv"---we are assuming surface water associated with the parcel is
-      now delivered to other junior users within the same canal service area
-    * "Div.gw.csv"---if there had been *measured* groundwater diversions associated with the parcel,
-      those would need to be deleted
-
-
-
+  * Groundwater diversions ("div.gw.csv")---if there had been *measured* groundwater diversions
+    associated with the parcel, those would need to be removed.
 
 ## Create Datasets
 
+The R script for creating the modified datasets (shown in code blocks) is
+primarily based on embedded R code in appendix C.
+It was necessary to alter the path names to the modified unprocessed-data files.
 Because we're not re-creating all datasets in the *wrv* package,
-we need the unmodified datasets to be loaded into our R session.
-To do so, we use the following code syntax `wrv::<name.of.dataset>`.
+we needed to be able to access the unmodified package datasets;
+to do so, we used the following code syntax `wrv::<name.of.dataset>` to gain access to these datasets.
 
 ### Level 1 Data
 
@@ -59,7 +58,7 @@ Read text file for Appendix C R-source code and parse and evaluate the preamble 
 ```{r app-c-r-1, message=FALSE}
 file <- system.file("doc", "sir20165080_AppendixC.R", package = "wrv")
 app.c.r <- readLines(file)
-eval(parse(text = app.c.r[1:(grep("DownloadFile", app.c.r)[1] - 1L)]))
+eval(parse(text = app.c.r[1:(grep("DownloadFile", app.c.r)[1] - 1)]))
 ```
 
 #### Combined surface-water irrigation diversions (comb.sw.irr)
@@ -266,13 +265,13 @@ Write its external representation as an R object in "data/entity.components.rda"
 save(entity.components, file = file.path(dir.dat, "entity.components.rda"), compress = "xz")
 ```
 
+## Process Model
 
+Something
 
+### Pre-processing
 
-## Scenario Description
-
-
-
+Something
 
 ```{r r-env-1, message=FALSE, eval=TRUE}
 rm(list = ls())
@@ -280,25 +279,71 @@ files <- list.files(file.path(getwd(), "data"), patter = "*.rda$", full.names = 
 for (i in files) load(i)
 ```
 
+Something
+
 ```{r app-d-r-1, eval=TRUE}
 file <- system.file("doc", "sir20165080_AppendixD.R", package = "wrv")
 app.d.r <- readLines(file)
 app.d.r <- app.d.r[-grep("invisible.*dev.off", app.d.r)]
 ```
 
+Something
 
 ```{r app-d-r-2, collapse=TRUE, message=FALSE, results="hide", fig.keep="none", eval=TRUE}
-line <- grep("## ----run-water-balance", app.d.r)
+line <- grep("## ----write_modflow_input", app.d.r)
+eval(parse(text = app.d.r[1:line]))
+app.d.r <- app.d.r[-(1:line)]
+line <- grep("## ----", app.d.r)[1] - 1
+app.d.r <- app.d.r[-(1:line)]
+```
+
+Something
+
+```{r app-d-r-3, eval=TRUE}
+id <- "wrv_mfusg"
+dir.run <- file.path(getwd(), "model")
+```
+
+Something
+
+```{r app-d-r-4, results="hide"}
+WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
+                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
+                  ntime.steps = ntime.steps, verbose = FALSE)
+```
+
+Something
+
+```{r app-d-r-5, results="hide"}
+url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
+file <- file.path(tempdir(), basename(file))
+download.file(url, file)
+files <- unzip(file, exdir = tempdir())
+file.copy(files[grep("\\.ref$", files)], dir.run, overwrite = TRUE)
+```
+
+### Run model
+
+Something
+
+```{r app-d-r-6}
+line <- grep("## ----read_budget", app.d.r)
+eval(parse(text = app.d.r[1:line]))
+```
+
+### Post-processing
+
+Something
+
+```{r app-d-r-7, eval=TRUE}
+line <- grep("## ----read_budget", app.d.r)
+app.d.r <- app.d.r[-(1:line)]
+line <- grep("## ----graph_budget", app.d.r)
 eval(parse(text = app.d.r[1:line]))
 app.d.r <- app.d.r[-(1:line)]
 ```
 
 
-```{r app-d-r-3, eval=TRUE}
-l <- RunWaterBalance(rs.model[["lay1.bot"]], tr.stress.periods, ss.stress.periods, efficiency=efficiency,
-                     canal.seep=canal.seep, comb.sw.irr = comb.sw.irr,
-                     entity.components = entity.components, et = et, pod.gw = pod.gw)
-```
 
 
 

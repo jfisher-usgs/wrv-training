@@ -48,3 +48,11 @@ Something
 
 3. Results from the scenario simulation and the baseline simulation are differenced
    to find the predicted change in flux or head
+
+
+
+* Modify several model-input files used to calculate aquifer recharge and withdrawals
+
+* Use R script to calculate aquifer recharge and withdrawals and build a new MODFLOW Well file ("*.wel")
+
+* Run simulation and post-process results using R
