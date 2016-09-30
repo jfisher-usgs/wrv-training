@@ -3,7 +3,7 @@ title: "Scenario 2"
 ---
 
 ```{r, include=FALSE,}
-knitr::opts_chunk$set(eval=TRUE)
+knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
 ```
 
 ## Scenario Description
@@ -56,10 +56,10 @@ Datasets processed at level 1.
 
 Read text file for Appendix C R-source code and parse and evaluate the preamble in the current R session.
 
-```{r app-a-src, message=FALSE}
+```{r app-c-r-1, message=FALSE}
 file <- system.file("doc", "sir20165080_AppendixC.R", package = "wrv")
-x <- readLines(file)
-eval(parse(text = x[1:(grep("DownloadFile", x)[1] - 1L)]))
+app.c.r <- readLines(file)
+eval(parse(text = app.c.r[1:(grep("DownloadFile", app.c.r)[1] - 1L)]))
 ```
 
 #### Combined surface-water irrigation diversions (comb.sw.irr)
@@ -273,6 +273,32 @@ save(entity.components, file = file.path(dir.dat, "entity.components.rda"), comp
 
 
 
+
+```{r r-env-1, message=FALSE, eval=TRUE}
+rm(list = ls())
+files <- list.files(file.path(getwd(), "data"), patter = "*.rda$", full.names = TRUE)
+for (i in files) load(i)
+```
+
+```{r app-d-r-1, eval=TRUE}
+file <- system.file("doc", "sir20165080_AppendixD.R", package = "wrv")
+app.d.r <- readLines(file)
+app.d.r <- app.d.r[-grep("invisible.*dev.off", app.d.r)]
+```
+
+
+```{r app-d-r-2, collapse=TRUE, message=FALSE, results="hide", fig.keep="none", eval=TRUE}
+line <- grep("## ----run-water-balance", app.d.r)
+eval(parse(text = app.d.r[1:line]))
+app.d.r <- app.d.r[-(1:line)]
+```
+
+
+```{r app-d-r-3, eval=TRUE}
+l <- RunWaterBalance(rs.model[["lay1.bot"]], tr.stress.periods, ss.stress.periods, efficiency=efficiency,
+                     canal.seep=canal.seep, comb.sw.irr = comb.sw.irr,
+                     entity.components = entity.components, et = et, pod.gw = pod.gw)
+```
 
 
 
