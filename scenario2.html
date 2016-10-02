@@ -285,9 +285,6 @@ div.tocify {
   <a href="index.html">Overview</a>
 </li>
 <li>
-  <a href="r-prog.html">R-Programming</a>
-</li>
-<li>
   <a href="calib-model.html">Calibrated Model</a>
 </li>
 <li>
@@ -312,7 +309,7 @@ div.tocify {
 
 <div id="description" class="section level2">
 <h2>Description</h2>
-<p>This example scenario describes a transient simulation (1995–2010) of the calibrated model converting an existing parcel of irrigated land to non-irrigated status; that is, the parcel is voluntarily allowed to go idle. The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:</p>
+<p>This example scenario describes a transient simulation (1995–2010) of the calibrated model converting an existing parcel of irrigated land to “non-irrigated” status; that is, the parcel is voluntarily allowed to go idle. The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:</p>
 <p><img src="images/scenario2-desc_01.png" /></p>
 <p>Changes to unprocessed-data files include:</p>
 <ul>
@@ -330,21 +327,31 @@ div.tocify {
 </div>
 <div id="create-datasets" class="section level2">
 <h2>Create Datasets</h2>
-<p>The R script for creating the modified datasets (shown in code blocks) is primarily based on embedded R code in appendix C. It was necessary to alter the path names to the modified unprocessed-data files. Because we’re not re-creating all datasets in the <em>wrv</em> package, we needed to be able to access the unmodified package datasets; to do so, we used the following code syntax <code>wrv::&lt;name.of.dataset&gt;</code> to gain access to these datasets.</p>
-<div id="level-1-data" class="section level3">
-<h3>Level 1 Data</h3>
-<p>Datasets processed at level 1.</p>
-<div id="creating-datasets-preamble" class="section level4">
-<h4>Creating datasets preamble</h4>
-<p>Read text file for Appendix C R-source code and parse and evaluate the preamble in the current R session.</p>
+<p>The R script for creating the modified datasets (shown in code blocks) is primarily based on embedded R code in Appendix C. The first step is to load the <strong>wrv</strong> package, and all its existing datasets, in our R environment.</p>
+<pre class="r"><code>library(wrv)</code></pre>
+<p>Each time we create a modified dataset it will mask the previously loaded version.</p>
+<p>Next, commands from the Appendix C R-source-code file (“sir20165080_AppendixC.R”), parse and evaluate the preamble.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixC.R&quot;, package = &quot;wrv&quot;)
 app.c.r &lt;- readLines(file)
-eval(parse(text = app.c.r[1:(grep(&quot;DownloadFile&quot;, app.c.r)[1] - 1)]))</code></pre>
-</div>
+line &lt;- grep(&quot;## ----download_git&quot;, app.c.r) - 1
+eval(parse(text = app.c.r[1:line]))
+app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
+<p>Skip intial commands for downloading the archived unprocessed-data files to a temporary directory.</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----create_data_dir&quot;, app.c.r) - 1
+app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
+<p>Specify the location where the modified unprocessed-data files currently residing under (“inst/extdata”).</p>
+<pre class="r"><code>dir.git &lt;- file.path(getwd(), &quot;extdata&quot;)</code></pre>
+<p>Parse and evaluate the inital commands for specifying unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----canal_seep_1&quot;, app.c.r) - 1
+eval(parse(text = app.c.r[1:line]))
+app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
+<div id="level-1-data" class="section level3">
+<h3>Level 1 Data</h3>
+<p>Datasets processed at level 1. Code chunks shown below are copy/pasted from Appendix C R-source file located in the <strong>wrv</strong> package (“sir20165080_AppendixC.R”).</p>
 <div id="combined-surface-water-irrigation-diversions-comb.sw.irr" class="section level4">
 <h4>Combined surface-water irrigation diversions (comb.sw.irr)</h4>
 <p>Read combined surface-water irrigation diversions data and write its external representation as an R object in “data/comb.sw.irr.rda”.</p>
-<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/comb.sw.irr.csv&quot;)
+<pre class="r"><code>file &lt;- file.path(dir.git, &quot;div/comb.sw.irr.csv&quot;)
 comb.sw.irr &lt;- read.csv(file, strip.white = TRUE)
 comb.sw.irr$Pdate &lt;- as.Date(comb.sw.irr$Pdate, format = &quot;%m/%d/%Y&quot;)
 comb.sw.irr$MaxDivRate &lt;- comb.sw.irr$MaxDivRate * cfs.to.m3.per.d
@@ -353,7 +360,7 @@ save(comb.sw.irr, file = file.path(dir.dat, &quot;comb.sw.irr.rda&quot;), compre
 <div id="points-of-diversion-for-groundwater-pod.gw" class="section level4">
 <h4>Points of diversion for groundwater (pod.gw)</h4>
 <p>Read points of diversion for groundwater data and write its external representation as an R object in “data/pod.gw.csv.rda”.</p>
-<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/pod.gw.csv&quot;)
+<pre class="r"><code>file &lt;- file.path(dir.git, &quot;div/pod.gw.csv&quot;)
 d &lt;- read.csv(file, strip.white = TRUE, stringsAsFactors = FALSE)
 d$Pdate &lt;- as.Date(d$PriorityDa, format = &quot;%m/%d/%Y&quot;)
 d$IrrRate &lt;- d$IRRcfs * cfs.to.m3.per.d
@@ -364,17 +371,15 @@ save(pod.gw, file = file.path(dir.dat, &quot;pod.gw.rda&quot;), compress = &quot
 <div id="well-completions-pod.wells" class="section level4">
 <h4>Well completions (pod.wells)</h4>
 <p>Read well completions data and initialize new variable in its data table.</p>
-<pre class="r"><code>file &lt;- file.path(getwd(), &quot;extdata/div/pod.wells.zip&quot;)
-unzip(file, exdir=tempdir())
-layer &lt;- sub(&quot;.zip$&quot;, &quot;&quot;, basename(file))
-pod.wells &lt;- readOGR(dsn = tempdir(), layer = layer, verbose = FALSE)
+<pre class="r"><code>path &lt;- file.path(dir.git, &quot;div&quot;)
+pod.wells &lt;- readOGR(dsn = path, layer = &quot;pod.wells&quot;, verbose = FALSE)
 pod.wells &lt;- spTransform(pod.wells, crs)
 d &lt;- pod.wells@data
 columns &lt;- c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
 d[, columns] &lt;- d[, columns] * ft.to.m
 d[d$TopOpen1 == 0 | d$BotOpen1 == 0, c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;)] &lt;- NA
 d[d$TopOpen2 == 0 | d$BotOpen2 == 0, c(&quot;TopOpen2&quot;, &quot;BotOpen2&quot;)] &lt;- NA</code></pre>
-<p>A missing well completion is assumed identical to the completion of its nearest-neighbor well.</p>
+<p>A missing well completion is assumed identical to the completion of its nearest-neighbor well. Write its external representation as an R object in “data/pod.wells.rda”.</p>
 <pre class="r"><code>is.pred &lt;- is.na(d$TopOpen1)
 dists &lt;- as.matrix(dist(coordinates(pod.wells)))
 dists &lt;- dists[!is.pred &amp; d$WellUse %in% &quot;Irrigation&quot;, ]
@@ -382,20 +387,18 @@ nearest.well &lt;- as.integer(apply(dists, 2, function(i) names(which.min(i))))
 d$TopOpen1[is.pred] &lt;- d$TopOpen1[nearest.well[is.pred]]
 d$BotOpen1[is.pred] &lt;- d$BotOpen1[nearest.well[is.pred]]
 columns &lt;- c(&quot;WMISNumber&quot;, &quot;WellUse&quot;, &quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
-pod.wells@data &lt;- d[, columns]</code></pre>
-<p>Write its external representation as an R object in “data/pod.wells.rda”.</p>
-<pre class="r"><code>save(pod.wells, file = file.path(dir.dat, &quot;pod.wells.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+pod.wells@data &lt;- d[, columns]
+save(pod.wells, file = file.path(dir.dat, &quot;pod.wells.rda&quot;), compress = &quot;xz&quot;)</code></pre>
 </div>
 <div id="irrigation-lands-irr.lands" class="section level4">
 <h4>Irrigation lands (irr.lands)</h4>
 <p>Read irrigated and semi-irrigated lands data and write its external representation as an R object in “data/irr.lands.rda”.</p>
-<pre class="r"><code>files &lt;- list.files(file.path(getwd(), &quot;extdata/irr&quot;), full.names = TRUE)
-yr &lt;- gsub(&quot;[^0-9]&quot;, &quot;&quot;, files)
+<pre class="r"><code>path &lt;- file.path(dir.git, &quot;irr&quot;)
+yr &lt;- c(1996, 2000, 2002, 2006, 2008, 2009, 2010)
+files &lt;- paste0(&quot;irr.lands.&quot;, yr)
 irr.lands &lt;- list()
 for (i in seq_along(files)) {
-  unzip(files[i], exdir=tempdir())
-  layer &lt;- sub(&quot;.zip$&quot;, &quot;&quot;, basename(files[i]))
-  p &lt;- readOGR(dsn = tempdir(), layer = layer, verbose = FALSE)
+  p &lt;- readOGR(dsn = path, layer = files[i], verbose = FALSE)
   p &lt;- spTransform(p, crs)
   p@data &lt;- p@data[, paste0(&quot;STATUS_&quot;, substr(yr[i], 1, 3)), drop = FALSE]
   names(p@data) &lt;- &quot;Status&quot;
@@ -410,18 +413,17 @@ save(irr.lands, file = file.path(dir.dat, &quot;irr.lands.rda&quot;), compress =
 <div id="evapotranspiration-et" class="section level4">
 <h4>Evapotranspiration (et)</h4>
 <p>Read evapotranspiration (ET) data and average by month. Note that ET raster files (“.tif”) are required for every month in the simulation, not just months with modified values.</p>
-<pre class="r"><code>files &lt;- list.files(file.path(getwd(), &quot;extdata/et&quot;), full.names = TRUE)
+<pre class="r"><code>files &lt;- file.path(dir.git, &quot;et&quot;, paste0(&quot;et.&quot;, yr.mo, &quot;.tif&quot;))
 FUN &lt;- function(i) {
-  r &lt;- readGDAL(i, band = 1, silent = TRUE)
-  raster::crs(r) &lt;- crs
+  r &lt;- readGDAL(files[i], band = 1, silent = TRUE)
   r[[1]] &lt;- r[[1]] * mm.to.m
   return(r)
 }
-et.raw &lt;- lapply(files, FUN)
+et.raw &lt;- lapply(seq_along(files), FUN)
 names(et.raw) &lt;- as.character(yr.mo)</code></pre>
-<p>Project raster data into model grid and place an upper and lower limit on ET that is 3 standard deviations from the mean value.</p>
-<pre class="r"><code>high.res.spatial.grid &lt;- disaggregate(spatial.grid, fact = 5L)
-is.missing &lt;- is.na(wrv::alluvium.thickness)
+<p>Project raster data into model grid and place an upper and lower limit on ET that is 3 standard deviations from the mean value. Write its external representation as an R object in “data/et.rda”.</p>
+<pre class="r"><code>high.res.spatial.grid &lt;- disaggregate(spatial.grid, fact = 5L) # added line
+is.missing &lt;- is.na(alluvium.thickness)
 FUN &lt;- function(i) {
   r &lt;- aggregate(projectRaster(raster(i), high.res.spatial.grid), fact = 5L)
   r[is.missing] &lt;- NA
@@ -430,113 +432,240 @@ FUN &lt;- function(i) {
   return(round(r, digits = 6))
 }
 et &lt;- stack(lapply(et.raw, FUN), quick = TRUE)
-names(et) &lt;- as.character(yr.mo)</code></pre>
-<p>Write its external representation as an R object in “data/et.rda”.</p>
-<pre class="r"><code>save(et, file = file.path(dir.dat, &quot;et.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+names(et) &lt;- as.character(yr.mo)
+save(et, file = file.path(dir.dat, &quot;et.rda&quot;), compress = &quot;xz&quot;)</code></pre>
 </div>
 </div>
 <div id="level-2-data" class="section level3">
 <h3>Level 2 Data</h3>
-<p>Datasets processed at level 2 result from analysis of level 1 data.</p>
-<div id="monthly-irrigation-entity-components-entity.components" class="section level4">
-<h4>Monthly irrigation entity components (entity.components)</h4>
-<p>Irrigation entities and their components. Start with the spatial polygon representing the irrigated lands and remove those areas that are designated as wetlands or public parcels. Intersect the resulting polygon with the irrigation entities and calculate the area for each entity.</p>
-<pre class="r"><code>p &lt;- irr.lands
-p &lt;- lapply(p, function(i) inlmisc::SetPolygons(i, wrv::wetlands, &quot;gDifference&quot;, 0.001))
-p &lt;- lapply(p, function(i) inlmisc::SetPolygons(i, wrv::public.parcels, &quot;gDifference&quot;, 0.001))
-p &lt;- lapply(p, function(i) inlmisc::SetPolygons(wrv::irr.entities, i, &quot;gIntersection&quot;, 0.001))
-for (i in seq_along(p)) p[[i]]@data$area &lt;- rgeos::gArea(p[[i]], byid = TRUE)
-irr.by.entity &lt;- p</code></pre>
-<p>Irrigation entities are subdivided by water source; that is, “surface-water only”, “groundwater only”, or “mixed source”. Aggregate irrigation entities by water source and calculate their area.</p>
-<pre class="r"><code>FUN &lt;- function(i) {
-  d &lt;- aggregate(i@data$area, by = list(i@data$EntitySrce), sum, na.rm = TRUE)
-  names(d) &lt;- c(&quot;EntitySrce&quot;, &quot;area&quot;)
-  FUN &lt;- function(j) as.character(i@data$PrecipZone[i@data$EntitySrce == j][1])
-  d$PrecipZone &lt;- as.factor(vapply(d$EntitySrce, FUN, &quot;&quot;))
-  return(d)
-}
-area.by.entity &lt;- lapply(irr.by.entity, FUN)</code></pre>
-<p>Calculate the volumetric components of ET, precipitation, and crop irrigation requirement for each irrigation entity and water source.</p>
-<pre class="r"><code>FUN &lt;- function(i) {
-  yr &lt;- wrv::irr.lands.year$IL_Year[wrv::irr.lands.year$Year %in% substr(i, 1, 4)]
-  p &lt;- irr.by.entity[[yr]]
-  unique.sources &lt;- sort(unique(as.character(p@data$EntitySrce)))
-  FUN &lt;- function (j) {
-    x &lt;- rgeos::gUnaryUnion(p[p@data$EntitySrce == j, ])@polygons[[1]]
-    slot(x, &quot;ID&quot;) &lt;- j
-    return(x)
-  }
-  sp &lt;- SpatialPolygons(lapply(unique.sources, FUN), proj4string = crs(et.raw[[i]]))
-  p &lt;- over(sp, et.raw[[i]], fn = mean, na.rm = TRUE)
-  d &lt;- as.data.frame(list(EntitySrce = rownames(p), mean.et = p[, 1]))
-  d &lt;- suppressWarnings(dplyr::left_join(d, area.by.entity[[yr]], by = &quot;EntitySrce&quot;))
-  d$et.vol &lt;- d$mean.et * d$area
-  d$precip.vol &lt;- NA
-  for (j in levels(d$PrecipZone)) {
-    is.in.zone &lt;- d$PrecipZone == j
-    idx &lt;- which(wrv::precipitation$YearMonth == i &amp; wrv::precipitation$PrecipZone == j)
-    d$precip.vol[is.in.zone] &lt;- d$area[is.in.zone] * wrv::precipitation$Precip[idx]
-  }
-  d$cir.vol &lt;- d$et.vol - d$precip.vol
-  idxs &lt;- match(d$EntitySrce, wrv::irr.entities@data$EntitySrce)
-  d[, c(&quot;EntityName&quot;, &quot;Source&quot;)] &lt;- wrv::irr.entities@data[idxs, c(&quot;EntityName&quot;, &quot;Source&quot;)]
-  rownames(d) &lt;- d$EntitySrce
-  return(SpatialPolygonsDataFrame(sp, d))
-}
-entity.components &lt;- lapply(yr.mo, FUN)
-names(entity.components) &lt;- yr.mo</code></pre>
-<p>Write its external representation as an R object in “data/entity.components.rda”.</p>
-<pre class="r"><code>save(entity.components, file = file.path(dir.dat, &quot;entity.components.rda&quot;), compress = &quot;xz&quot;)</code></pre>
-</div>
+<p>Datasets processed at level 2 result from analysis of level 1 data. Parse and evaluate all level 2 datasets and write their external representations as R object in “data”. Datasets include monthly irrigation entity components (<code>entity.components</code>), rasterized canals (<code>r.canals</code>), rasterized monthly irrigation entities (<code>rs.entities</code>), and rasterized monthly recharge on non-irrigated lands (<code>rs.rech.non.irr</code>).</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----entity_components_1&quot;, app.c.r) - 1
+app.c.r &lt;- app.c.r[-(1:line)]
+eval(parse(text = app.c.r))</code></pre>
 </div>
 </div>
 <div id="process-model" class="section level2">
 <h2>Process Model</h2>
-<p>Something</p>
-<div id="pre-processing" class="section level3">
-<h3>Pre-processing</h3>
-<p>Something</p>
+<p>The R script for processing the model (shown in code blocks) is primarily based on embedded R code in Appendix D.</p>
+<div id="pre-process" class="section level3">
+<h3>Pre-process</h3>
+<p>Clear R objects from the current R environment and re-load modified datasets.</p>
 <pre class="r"><code>rm(list = ls())
-files &lt;- list.files(file.path(getwd(), &quot;data&quot;), patter = &quot;*.rda$&quot;, full.names = TRUE)
+files &lt;- list.files(file.path(getwd(), &quot;data&quot;), pattern = &quot;*.rda$&quot;, full.names = TRUE)
 for (i in files) load(i)</code></pre>
-<p>Something</p>
+<p>Read Appendix D R-source-code file (“sir20165080_AppendixD.R”) and remove all lines with the <code>invisible(dev.off())</code> command. This command is only useful when copy/pasting directly from the R-source-code file.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
 app.d.r &lt;- readLines(file)
 app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]</code></pre>
-<p>Something</p>
+<p>Parse and evaluate all previous commands up to writing model input files.</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----write_modflow_input&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))
 app.d.r &lt;- app.d.r[-(1:line)]
 line &lt;- grep(&quot;## ----&quot;, app.d.r)[1] - 1
 app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
-<p>Something</p>
+<p>Set a model name identifier and pathname to the model-run folder (“model”).</p>
 <pre class="r"><code>id &lt;- &quot;wrv_mfusg&quot;
 dir.run &lt;- file.path(getwd(), &quot;model&quot;)</code></pre>
-<p>Something</p>
+<p>Write model input files to the model-run folder.</p>
 <pre class="r"><code>WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
                   is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
                   ntime.steps = ntime.steps, verbose = FALSE)</code></pre>
-<p>Something</p>
-<pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip&quot;
-file &lt;- file.path(tempdir(), basename(file))
-download.file(url, file)
-files &lt;- unzip(file, exdir = tempdir())
-file.copy(files[grep(&quot;\\.ref$&quot;, files)], dir.run, overwrite = TRUE)</code></pre>
+<div id="copy-calibrated-files" class="section level4">
+<h4>Copy calibrated files</h4>
+<p>Overwrite model input reference files (“model/*.ref”) containing hydraulic conductivity and storage coefficient values, with reference files containing their calibrated values (“archive/*.ref”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
+<pre class="r"><code>dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
+files &lt;- list.files(dir.archive, full.names = TRUE)
+files &lt;- files[grep(&quot;(\\.ref|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
+file.copy(files, dir.run, overwrite = TRUE)</code></pre>
 </div>
-<div id="run-model" class="section level3">
-<h3>Run model</h3>
-<p>Something</p>
+<div id="save-file-containing-r-objects." class="section level4">
+<h4>Save file containing R objects.</h4>
+<p>Write a few of the R objects to a single binary R-data file in the model-run folder (“model/model.rda”). This R-data file contains the following objects: <code>rs</code>, <code>misc</code>, <code>trib</code>, <code>tr.stress.periods</code>, and <code>ss.stress.periods</code>. A description of each R object is given in the help documentation of the <code>UpdateWaterBudget</code> function in the <strong>wrv</strong> package.</p>
+<pre class="r"><code>rs &lt;- subset(rs.model, c(&quot;lay1.top&quot;, sprintf(&quot;lay%s.bot&quot;, 1:3)))
+save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
+     file = file.path(dir.run, &quot;model.rda&quot;))</code></pre>
+</div>
+<div id="run-water-budget-calculation" class="section level4">
+<h4>Run water budget calculation</h4>
+<p>Run the water-budget calculation and specify function arguments using modified datasets.</p>
+<pre class="r"><code>UpdateWaterBudget(dir.run, id, qa.tables = &quot;english&quot;, pod.wells = pod.wells,
+                  comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
+                  entity.components = entity.components, rs.entities = rs.entities)</code></pre>
+</div>
+</div>
+<div id="run-modflow" class="section level3">
+<h3>Run MODFLOW</h3>
+<p>Run the modified-model simulation.</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----read_budget&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))</code></pre>
+<p>and remove the evaluated commands.</p>
+<pre class="r"><code>app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
 </div>
-<div id="post-processing" class="section level3">
-<h3>Post-processing</h3>
-<p>Something</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----read_budget&quot;, app.d.r)
-app.d.r &lt;- app.d.r[-(1:line)]
-line &lt;- grep(&quot;## ----graph_budget&quot;, app.d.r)
+<div id="post-process" class="section level3">
+<h3>Post-process</h3>
+<p>Both the modified and archived model simualtions are included the post-processing instructions.</p>
+<div id="read-water-budget-for-archived-simulation" class="section level4">
+<h4>Read water budget for archived simulation</h4>
+<p>Read water budget output for archived simulation, located in “archive” folder, and save results.</p>
+<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;archive&quot;)
+line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))
+d.river.arch   &lt;- d.river
+d.drain.1.arch &lt;- d.drain.1
+d.drain.2.arch &lt;- d.drain.2
+d.rech.arch    &lt;- d.rech
+d.well.arch    &lt;- d.well
+d.trib.arch    &lt;- d.trib</code></pre>
+</div>
+<div id="read-water-budget-for-modified-simulation" class="section level4">
+<h4>Read water budget for modified simulation</h4>
+<p>Read water budget output for modified simulation, located in “model” folder, and summarize results in the following figure.</p>
+<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
+line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
+eval(parse(text = app.d.r[1:line]))</code></pre>
+<p><img src="figures/fig_1-1.png" width="1074" style="display: block; margin: auto;" /></p>
+<p><strong>Figure:</strong> Volumetric water budget components by year, including annual change in storage, for the entire simulation period, 1995–2010, south-central Idaho—based on the Scenario 2 model results.</p>
+</div>
+<div id="compare-water-budgets" class="section level4">
+<h4>Compare water budgets</h4>
+<p>A comparison between archived and modified water budgets is shown in the following table.</p>
+<p><strong>Table:</strong> Water budgets for modified and archived simulation, specified as volumetric flow rates average over 1998–2010. [<strong>Inflow:</strong> water entering the aquifer system. <strong>Outflow:</strong> water leaving the aquifer system. <strong>Component:</strong> a water budget component in the groundwater-flow model. <strong>Archived Rate:</strong> is the mean volumetric flow rate for the archived simulation. <strong>Modified Rate</strong>: is the mean volumetric flow rate for the modified simulation. <strong>Difference:</strong> is the archived rate subtracted from the modified rate. <strong>Abbreviations:</strong> acre-ft/yr, acre-feet per year]</p>
+<table style="width:100%;">
+<colgroup>
+<col width="13%" />
+<col width="20%" />
+<col width="18%" />
+<col width="18%" />
+<col width="16%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Component</th>
+<th align="right">Archived rate<br>(acre-ft/yr)</th>
+<th align="right">Modified rate<br>(acre-ft/yr)</th>
+<th align="right">Difference<br>(arce-ft/yr)</th>
+<th align="right">Percent<br>change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Inflow</strong></td>
+<td align="left">Water-table recharge</td>
+<td align="right">131,738</td>
+<td align="right">131,594</td>
+<td align="right">-144</td>
+<td align="right">-0.1</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Streamflow losses</td>
+<td align="right">177,813</td>
+<td align="right">306,807</td>
+<td align="right">128,994</td>
+<td align="right">72.5</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Tributary basin underflow</td>
+<td align="right">44,042</td>
+<td align="right">44,042</td>
+<td align="right">0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Outflow</strong></td>
+<td align="left">Water-table discharge</td>
+<td align="right">28,708</td>
+<td align="right">28,708</td>
+<td align="right">0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Streamflow gains</td>
+<td align="right">251,967</td>
+<td align="right">376,047</td>
+<td align="right">124,080</td>
+<td align="right">49.2</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Production well pumping</td>
+<td align="right">62,538</td>
+<td align="right">61,459</td>
+<td align="right">-1,078</td>
+<td align="right">-1.7</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Stanton Crossing outlet boundary</td>
+<td align="right">284</td>
+<td align="right">254</td>
+<td align="right">-30</td>
+<td align="right">-10.5</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Silver Creek outlet boundary</td>
+<td align="right">9,492</td>
+<td align="right">15,913</td>
+<td align="right">6,421</td>
+<td align="right">67.6</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Inflow - Outflow</strong></td>
+<td align="left">Change in aquifer storage</td>
+<td align="right">604</td>
+<td align="right">62</td>
+<td align="right">-542</td>
+<td align="right">-89.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="read-heads-for-archived-simulation" class="section level4">
+<h4>Read heads for archived simulation</h4>
+<p>Read simulated hydraulic heads for archived simulation, located in “archive” folder, and save results.</p>
+<pre class="r"><code>line &lt;- grep(&quot;## ----read_head&quot;, app.d.r) - 1
+app.d.r &lt;- app.d.r[-(1:line)]
+dir.run &lt;- file.path(getwd(), &quot;archive&quot;)
+line &lt;- grep(&quot;## ----map_head_exceedance&quot;, app.d.r)
+eval(parse(text = app.d.r[1:line]))
+rs.wt.arch &lt;- rs.wt</code></pre>
+</div>
+<div id="read-heads-for-modified-simulation" class="section level4">
+<h4>Read heads for modified simulation</h4>
+<p>Read simulated water table for modified simulation, located in “model” folder.</p>
+<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
+line &lt;- grep(&quot;## ----map_head_exceedance&quot;, app.d.r)
+eval(parse(text = app.d.r[1:line]))
+line &lt;- grep(&quot;## ----map_wt_e&quot;, app.d.r)
 app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
+</div>
+<div id="compare-simulated-water-tables" class="section level4">
+<h4>Compare simulated water tables</h4>
+<p>A comparison between simulated water tables is shown in the following figure.</p>
+<p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during December 2010.</p>
+<p><img src="figures/fig_2-1.png" width="1074" style="display: block; margin: auto;" /></p>
+</div>
 </div>
 </div>
 

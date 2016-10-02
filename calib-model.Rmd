@@ -2,9 +2,47 @@
 title: "Calibrated Model"
 ---
 
+```{r, include=FALSE,}
+knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
+```
+
 Something
 
 ## Something
 
-Something
+Download the model input files for the calibrated model,
+archived on the USGS Water Resources [NSDI Node](http://dx.doi.org/10.5066/F7C827DT).
+
+```{r archive-1, results="hide", eval=FALSE}
+url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
+file <- file.path(tempdir(), basename(url))
+download.file(url, file)
+files <- unzip(file, exdir = tempdir())
+dir.archive <- file.path(getwd(), "archive")
+dir.create(path=dir.archive, showWarnings=FALSE, recursive=TRUE)
+file.copy(files, dir.archive, overwrite = TRUE)
+```
+
+Download the model output files for the calibrated model.
+
+```{r archive-2, results="hide", eval=FALSE}
+url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/output.zip"
+file <- file.path(tempdir(), basename(url))
+download.file(url, file)
+files <- unzip(file, exdir = tempdir())
+file.copy(files, dir.archive, overwrite = TRUE)
+```
+
+
+download exe
+
+explain water buget files missing from archive
+
+run water budget calculation
+
+map water table
+
+plot head over time at a given well
+
+
 

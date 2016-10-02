@@ -285,9 +285,6 @@ div.tocify {
   <a href="index.html">Overview</a>
 </li>
 <li>
-  <a href="r-prog.html">R-Programming</a>
-</li>
-<li>
   <a href="calib-model.html">Calibrated Model</a>
 </li>
 <li>
@@ -313,7 +310,25 @@ div.tocify {
 <p>Something</p>
 <div id="something" class="section level2">
 <h2>Something</h2>
-<p>Something</p>
+<p>Download the model input files for the calibrated model, archived on the USGS Water Resources <a href="http://dx.doi.org/10.5066/F7C827DT">NSDI Node</a>.</p>
+<pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip&quot;
+file &lt;- file.path(tempdir(), basename(url))
+download.file(url, file)
+files &lt;- unzip(file, exdir = tempdir())
+dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
+dir.create(path=dir.archive, showWarnings=FALSE, recursive=TRUE)
+file.copy(files, dir.archive, overwrite = TRUE)</code></pre>
+<p>Download the model output files for the calibrated model.</p>
+<pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/output.zip&quot;
+file &lt;- file.path(tempdir(), basename(url))
+download.file(url, file)
+files &lt;- unzip(file, exdir = tempdir())
+file.copy(files, dir.archive, overwrite = TRUE)</code></pre>
+<p>download exe</p>
+<p>explain water buget files missing from archive</p>
+<p>run water budget calculation</p>
+<p>map water table</p>
+<p>plot head over time at a given well</p>
 </div>
 
 <div id="page-footer">

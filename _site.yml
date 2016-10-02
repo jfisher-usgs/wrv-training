@@ -5,8 +5,6 @@ navbar:
   left:
     - text: "Overview"
       href: index.html
-    - text: "R-Programming"
-      href: r-prog.html
     - text: "Calibrated Model"
       href: calib-model.html
     - text: "Scenario 2"
