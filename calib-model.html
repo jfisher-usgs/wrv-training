@@ -307,28 +307,185 @@ div.tocify {
 </div>
 
 
-<p>Something</p>
-<div id="something" class="section level2">
-<h2>Something</h2>
-<p>Download the model input files for the calibrated model, archived on the USGS Water Resources <a href="http://dx.doi.org/10.5066/F7C827DT">NSDI Node</a>.</p>
+<p>Running and analysing the archived calibrated model.</p>
+<div id="reconstitute-model-files" class="section level2">
+<h2>Reconstitute Model Files</h2>
+<p>These instructions describe how to reconstitute the file structure for a calibrated model run.</p>
+<p>Startup an R session. Set the working directory of R processes to the “wrv-training” folder. To do so, paste the following command in your R session and navigate to the “wrv-training” folder.</p>
+<pre class="r"><code>setwd(choose.dir())</code></pre>
+<p>Load the <strong>wrv</strong>, <strong>inlmisc</strong>, and <a href="https://cran.r-project.org/package=raster"><strong>raster</strong></a> R packages in our current R environment. To do so, open an R session and use the following command.</p>
+<pre class="r"><code>library(wrv)
+library(inlmisc)
+library(raster)</code></pre>
+<div id="download-model-files" class="section level3">
+<h3>Download model files</h3>
+<p>Next, download model-input files for the calibrated model, archived on the USGS Water Resources <a href="http://dx.doi.org/10.5066/F7C827DT">NSDI Node</a>. Model-input files will be written to the “archive” folder in your working directory.</p>
 <pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip&quot;
 file &lt;- file.path(tempdir(), basename(url))
 download.file(url, file)
 files &lt;- unzip(file, exdir = tempdir())
-dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
-dir.create(path=dir.archive, showWarnings=FALSE, recursive=TRUE)
-file.copy(files, dir.archive, overwrite = TRUE)</code></pre>
-<p>Download the model output files for the calibrated model.</p>
+files &lt;- files[basename(files) != &quot;usgs.model.reference&quot;]
+dir.create(&quot;archive&quot;, showWarnings=FALSE, recursive=TRUE)
+file.copy(files, &quot;archive&quot;, overwrite = TRUE)</code></pre>
+<p>Download model-output files for the calibrated model from the NSDI Node, and place them in the “archive” folder.</p>
 <pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/output.zip&quot;
 file &lt;- file.path(tempdir(), basename(url))
 download.file(url, file)
 files &lt;- unzip(file, exdir = tempdir())
-file.copy(files, dir.archive, overwrite = TRUE)</code></pre>
-<p>download exe</p>
-<p>explain water buget files missing from archive</p>
-<p>run water budget calculation</p>
-<p>map water table</p>
-<p>plot head over time at a given well</p>
+file.copy(files, &quot;archive&quot;, overwrite = TRUE)</code></pre>
+<p>Download the archived MODFLOW-USG executable (64-bit) file from the NSDI Node, and place it in the “archive” folder.</p>
+<pre class="r"><code>url &lt;- &quot;http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/bin.zip&quot;
+file &lt;- file.path(tempdir(), basename(url))
+download.file(url, file)
+files &lt;- unzip(file, exdir = tempdir())
+file.copy(files[grep(&quot;\\.exe$&quot;, files)], &quot;archive&quot;, overwrite = TRUE)</code></pre>
+</div>
+<div id="batch-file-for-running-model" class="section level3">
+<h3>Batch file for running model</h3>
+<p>Create a batch file (“archive/RunModflow.bat”) containing commands that may be used to run the model from File Explorer.</p>
+<pre class="r"><code>cat(&quot;mfusg \&quot;wrv_mfusg.nam\&quot;&quot;, file = &quot;archive/RunModflow.bat&quot;)</code></pre>
+<p>There are four files used in the water-budget calculation that already reside in the “archive” folder. The “eff.csv”, “seep.csv”, and “trib.csv” files contain optimized values of irrigation efficiency, canal seepage, and tributary underflow, respectively. The “model.rda” file contains R objects <code>d.in.mv.ave</code>, <code>misc</code>, <code>reduction</code>, <code>rs</code>, <code>ss.stress.periods</code>, <code>tr.stress.periods</code>, and <code>trib</code>. A description of each these objects is given in the help documentation of the <code>UpdateWaterBudget</code> function in the <strong>wrv</strong> package. At some future date all four water-budget input files will be added to the model archive.</p>
+</div>
+<div id="run-water-budget-calculation" class="section level3">
+<h3>Run water-budget calculation</h3>
+<p>Run the water-budget calculation and specify to write out quality assurace tables (“archive/qa-*.csv”). The MODFLOW Well Package file will be re-written (“archive/wrv_mfusg.wel”), however, the file should not have changed because all the water-budget input files have not changed.</p>
+<pre class="r"><code>UpdateWaterBudget(&quot;archive&quot;, &quot;wrv_mfusg&quot;, qa.tables = &quot;english&quot;)</code></pre>
+</div>
+</div>
+<div id="post-process-model" class="section level2">
+<h2>Post-Process Model</h2>
+<p>These instructions describe an example analysis of model output.</p>
+<p>Load R objects from a R-data file in the archive folder (“archive/model.rda”) and list all objects in your R environment.</p>
+<pre class="r"><code>load(&quot;archive/model.rda&quot;)
+cat(ls(), sep = &quot;, &quot;)</code></pre>
+<pre><code>## d.in.mv.ave, misc, reduction, rs, ss.stress.periods, tr.stress.periods, trib</code></pre>
+<div id="calculate-transmissivity" class="section level3">
+<h3>Calculate transmissivity</h3>
+<p>Transmissivity is a measure of how much water can be transmitted horizontally, such as to a pumping well. To calculate transmissivity values in model layer 1, multiply the layer thickness by the calibrated hydraulic conductivity. Recall that a specified-thickness approximation was made in model construction, in other words, the saturated thickness is assumed to be independent from head changes in the aquifer system. Therefore, we can get away with using layer thickness rather than saturated thickness in layer 1.</p>
+<p>Write a simple function to read model input reference files (“*.ref”).</p>
+<pre class="r"><code>ReadReferenceFile &lt;- function(file, mask.value = 1e+09) {
+  x &lt;- scan(file, quiet = TRUE)
+  x[x == mask.value] &lt;- NA
+  r &lt;- raster(rs)
+  r[] &lt;- x
+  return(r)
+}</code></pre>
+<p>Put our new function to use and read in the calibrated hydraulic conductivity values. Realize that the R object <code>rs</code> stores raster layers describing the geometry of the model grid.</p>
+<pre class="r"><code>r &lt;- ReadReferenceFile(&quot;archive/hk1.ref&quot;)
+names(r) &lt;- &quot;lay1.hk&quot;
+rs &lt;- stack(rs, r)
+r &lt;- ReadReferenceFile(&quot;archive/hk2.ref&quot;)
+names(r) &lt;- &quot;lay2.hk&quot;
+rs &lt;- stack(rs, r)
+r &lt;- ReadReferenceFile(&quot;archive/hk3.ref&quot;)
+names(r) &lt;- &quot;lay3.hk&quot;
+rs &lt;- stack(rs, r)
+print(rs)</code></pre>
+<pre><code>## class       : RasterStack 
+## dimensions  : 542, 299, 162058, 7  (nrow, ncol, ncell, nlayers)
+## resolution  : 100, 100  (x, y)
+## extent      : 2466200, 2496100, 1344139, 1398339  (xmin, xmax, ymin, ymax)
+## coord. ref. : +proj=tmerc +lat_0=42 +lon_0=-114 +k=0.9996 +x_0=2500000 +y_0=1200000 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0 
+## names       :     lay1.top,     lay1.bot,     lay2.bot,     lay3.bot,      lay1.hk,      lay2.hk,      lay3.hk 
+## min values  : 1.468732e+03, 1.443767e+03, 1.438767e+03, 1.385819e+03, 7.165530e-01, 3.916876e-05, 5.486279e+00 
+## max values  :    1945.9944,    1909.8595,    1652.5428,    1624.6990,   37290.6100,     236.1906,    5153.6430</code></pre>
+<p>Calculate the transmissivity of model layer 1.</p>
+<pre class="r"><code>r &lt;- (rs[[&quot;lay1.top&quot;]] - rs[[&quot;lay1.bot&quot;]]) * rs[[&quot;lay1.hk&quot;]]</code></pre>
+<p>Finally, construct a map of transmissivity in model layer 1</p>
+<pre class="r"><code>r[] &lt;- log10(r[])
+Pal &lt;- colorRampPalette(c(&quot;#F02311&quot;, &quot;#FFFFEA&quot;, &quot;#107FC9&quot;))
+usr.map &lt;- c(2451504, 2497815, 1342484, 1402354)
+breaks &lt;- pretty(r[], n = 15, na.rm = TRUE)
+at &lt;- breaks[c(TRUE, FALSE)]
+labels &lt;- ToScientific(10^at, digits = 1, lab.type = &quot;plotmath&quot;)
+credit &lt;- paste(&quot;Base derived from U.S. Geological Survey National Elevation Dataset 10-meter digital&quot;,
+                &quot;elevation model.\nIdaho Transverse Mercator projection; North American Datum of 1983.&quot;)
+explanation &lt;- &quot;Transmissivity, in square meters per day, plotted on a logarithmic scale.&quot;
+PlotMap(r, breaks = breaks, xlim = usr.map[1:2], ylim = usr.map[3:4], bg.image = hill.shading,
+        bg.image.alpha = 0.6, dms.tick = TRUE, pal = Pal, explanation = explanation,
+        rivers = list(x = streams.rivers), lakes = list(x = lakes),
+        labels = list(at = at, labels = labels), credit = credit, contour.lines = list(col = &quot;#1F1F1F&quot;))
+plot(cities, pch = 15, cex = 0.8, col = &quot;#333333&quot;, add = TRUE)
+text(cities, labels = cities@data$FEATURE_NA, col = &quot;#333333&quot;, cex = 0.5, pos = 1, offset = 0.4)</code></pre>
+<p><img src="figures/map_hk1-1.png" width="1051.5" /></p>
+</div>
+<div id="compare-head-hydrographs" class="section level3">
+<h3>Compare Head Hydrographs</h3>
+<p>Read simulated hydraulic heads for the calibrated model, located in “archive” folder.</p>
+<pre class="r"><code>heads &lt;- ReadModflowBinary(&quot;archive/wrv_mfusg.hds&quot;)
+dates &lt;- as.Date(vapply(heads, function(i) i$totim, 0), origin = tr.stress.periods[1])
+layer &lt;- vapply(heads, function(i) i$ilay, 0L)
+FUN &lt;- function(i) {return(setValues(raster(rs), i$d))}
+rs.heads.lay1 &lt;- mask(stack(lapply(heads[layer == 1L], FUN)), rs[[&quot;lay1.bot&quot;]])
+rs.heads.lay2 &lt;- mask(stack(lapply(heads[layer == 2L], FUN)), rs[[&quot;lay2.bot&quot;]])
+rs.heads.lay3 &lt;- mask(stack(lapply(heads[layer == 3L], FUN)), rs[[&quot;lay3.bot&quot;]])
+raster.names &lt;- format(dates[layer == 1L])
+names(rs.heads.lay1) &lt;- raster.names
+names(rs.heads.lay2) &lt;- raster.names
+names(rs.heads.lay3) &lt;- raster.names</code></pre>
+<p>Aggregate each wells spatial location, observed head, simulated head, and residual head data.</p>
+<pre class="r"><code>well &lt;- obs.wells
+head &lt;- obs.wells.head
+well.config &lt;- GetWellConfig(rs, well, &quot;PESTNAME&quot;)
+FUN &lt;- function(i) {
+  idxs &lt;- which(well.config$PESTNAME == i)
+  return(max(well.config[idxs, &quot;lay&quot;]))
+}
+well@data$lay &lt;- vapply(unique(well.config$PESTNAME), FUN, 0L)
+head &lt;- dplyr::left_join(head, well@data[, c(&quot;PESTNAME&quot;, &quot;desc&quot;, &quot;lay&quot;)], by = &quot;PESTNAME&quot;)
+head$Date &lt;- as.Date(head$DateTime)
+head$head.obs &lt;- head$Head
+FUN &lt;- function(i) {
+  loc &lt;- well[match(head$PESTNAME[i], well@data$PESTNAME), ]
+  idx &lt;- findInterval(head$Date[i], as.Date(raster.names), all.inside = TRUE)
+  rs &lt;- subset(get(paste0(&quot;rs.heads.lay&quot;, head$lay[i])), c(idx, idx + 1L))
+  y &lt;- extract(rs, loc)
+  x &lt;- as.numeric(as.Date(raster.names)[c(idx, idx + 1L)])
+  return((y[2] - y[1]) / (x[2] - x[1]) * (as.numeric(head$Date[i]) - x[1]) + y[1])
+}
+head$head.sim &lt;- vapply(seq_len(nrow(head)), FUN, 0)
+head$head.res &lt;- head$head.obs - head$head.sim
+x &lt;- aggregate(head[, c(&quot;head.obs&quot;, &quot;head.sim&quot;, &quot;head.res&quot;)],
+               by = list(PESTNAME = head$PESTNAME), mean)
+well@data &lt;- dplyr::left_join(well@data, x, by = &quot;PESTNAME&quot;)</code></pre>
+<p>Choose a single well from the 776 wells in the aquifer system. We selected a well based on its USGS NWIS site number (<code>SiteNo</code>); although one could easily select it based on other well attributes, such as the IDWR site number (<code>SITEIDIDWR</code>), PEST identifier (<code>PEST</code>), common well name (<code>WELLNUMBER</code>), or its geographical coordinates.</p>
+<pre class="r"><code>site.no &lt;- &quot;432650114144701&quot;
+w &lt;- well[well$SiteNo %in% site.no, ]
+rb &lt;- get(paste0(&quot;rs.heads.lay&quot;, w@data$lay))
+ext &lt;- t(extract(rb, coordinates(w)))
+head.sim &lt;- data.frame(Date = as.Date(rownames(ext)), head.sim = ext[, 1])
+head.obs &lt;- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
+cat(with(w@data, sprintf(&quot;Well No. %s, USGS NWIS Site No. %s&quot;, WELLNUMBER, SiteNo)))</code></pre>
+<pre><code>## Well No. 01N 18E 01DAA2, USGS NWIS Site No. 432650114144701</code></pre>
+<p>The location of the well is shown in the following figure.</p>
+<pre class="r"><code>PlotMap(crs(hill.shading), xlim = usr.map[1:2], ylim = usr.map[3:4], bg.image = hill.shading,
+        dms.tick = TRUE, bg.image.alpha = 0.6, rivers = list(x = streams.rivers),
+        lakes = list(x = lakes), credit = credit)
+plot(alluvium.extent, border = &quot;#FFFFFFCC&quot;, col = NA, add = TRUE)
+plot(cities, pch = 15, cex = 0.8, col = &quot;#333333&quot;, add = TRUE)
+text(cities, labels = cities@data$FEATURE_NA, col = &quot;#333333&quot;, cex = 0.5, pos = 1, offset = 0.4)
+points(w, pch = 21, cex = 1.5, lwd = 0.5, col = NA, bg = &quot;#F02311&quot;)
+text(w, labels = w@data$SiteNo, col = &quot;#333333&quot;, cex = 0.8, pos = 4, offset = 0.4)</code></pre>
+<p><img src="figures/map_well-1.png" width="1051.5" /></p>
+<p>Finally, plot the measured and simulated groundwater-level hydrographs.</p>
+<pre class="r"><code>xlim &lt;- range(head.sim$Date)
+ylim &lt;- range(pretty(range(c(head.sim$head.sim, head.obs$head.obs))))
+cols &lt;- c(&quot;#2A8FBDE5&quot;, &quot;#A40802&quot;, &quot;#FAFAD2&quot;)
+xbuf &lt;- as.Date(c(&quot;1995-01-01&quot;, &quot;1998-01-01&quot;))
+bg.polygon &lt;- list(x = xy.coords(c(xbuf, rev(xbuf)), c(rep(ylim[1], 2), rep(ylim[2], 2))),
+                   col = cols[3])
+ylab &lt;- paste(&quot;Hydraulic head in&quot;, c(&quot;meters&quot;, &quot;feet&quot;), &quot;above the NAVD88&quot;)
+m.to.ft &lt;- 3.280839895
+PlotGraph(head.sim, xlim = xlim, ylim = ylim, ylab = ylab, col = cols[2],
+          conversion.factor = m.to.ft, bg.polygon = bg.polygon, center.date.labels = TRUE)
+lines(x = as.Date(head.obs$DateTime), y = head.obs$head.obs,
+      type = &quot;b&quot;, pch = 20, lwd = 0.5, col = cols[1])
+labs &lt;- c(&quot;Measured groundwater level&quot;, &quot;Simulated groundwater level&quot;, &quot;Warm-up period in simulation&quot;)
+legend(&quot;topright&quot;, labs, pch = c(20, NA, 22), lwd = c(0.5, 1, NA), col = c(cols[1:2], &quot;lightgray&quot;),
+       pt.bg = c(NA, NA, cols[3]), pt.lwd = c(NA, NA, 0.5), pt.cex = c(1, NA, 1.5), inset = 0.02,
+       cex = 0.7, box.lty = 1, box.lwd = 0.5, xpd = NA, bg = &quot;#FFFFFFCD&quot;)</code></pre>
+<p><img src="figures/graph_head-1.png" width="1074" /></p>
+</div>
 </div>
 
 <div id="page-footer">

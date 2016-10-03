@@ -307,47 +307,44 @@ div.tocify {
 </div>
 
 
-<div id="description" class="section level2">
-<h2>Description</h2>
-<p>This example scenario describes a transient simulation (1995–2010) of the calibrated model converting an existing parcel of irrigated land to “non-irrigated” status; that is, the parcel is voluntarily allowed to go idle. The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:</p>
+<p>This example scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as “non-irrigated”; that is, what happens when you voluntarily allow an irrigated parcel to go idle? Model boundary conditions are modified in the archived calibrated model to best represent this scenario. The idled land parcel (about 600 acres, or better yet 2.4-square kilometers) is shown in the following figure.</p>
 <p><img src="images/scenario2-desc_01.png" /></p>
-<p>Changes to unprocessed-data files include:</p>
+<p>Changes to <a href="https://github.com/USGS-R/wrv/tree/master/inst/extdata">unprocessed-data files</a> include:</p>
 <ul>
 <li><p>Irrigated lands (“extdata/irr/irr.lands.&lt;YYYY&gt;.zip”)—changed parcel status to “non-irrigated”.</p></li>
-<li><p>Evapotranspiration (ET)(“extdata/et/et.&lt;YYYMM&gt;.tif”)—reduced ET within the parcel and set equal to the monthly precipitation during the irrigation season.</p></li>
+<li><p>Evapotranspiration (ET)(“extdata/et/et.&lt;YYYMM&gt;.tif”)—reduced ET within the parcel and set equal to the monthly precipitation during the irrigation season (April–October).</p></li>
 <li><p>Combined surface-water irrigation diversions (“extdata/div/comb.sw.irr.csv”)–removed diversions associated with wells in parcel.</p></li>
 <li><p>Groundwater points of diversion (“extdata/div/pod.gw.csv”)—removed diversions for wells in parcel.</p></li>
 <li><p>Well sites (“extdata/div/pod.wells.zip”)—removed sites located in parcel.</p></li>
 </ul>
-<p>Files that did not need to be modified for this scenario, but may want to consider modifying for similar model scenarios include:</p>
+<p>Files that did not need to be modified for this scenario, but may want to considered for modification in similar types of model scenarios include:</p>
 <ul>
-<li><p>Surface water diversions (“div.sw.csv”)—we assumed surface water associated with the idled parcel is now delivered to other junior users within the same canal service area.</p></li>
-<li><p>Groundwater diversions (“div.gw.csv”)—if there had been <em>measured</em> groundwater diversions associated with the parcel, those would need to be removed.</p></li>
+<li><p>Surface water diversions (“div.sw.csv”)—we assumed surface water associated with the idled parcel is now delivered to other “junior” users within the same canal service area.</p></li>
+<li><p>Groundwater diversions (“div.gw.csv”)—if there had been “measured” groundwater diversions associated with the parcel, those would need to be removed.</p></li>
 </ul>
-</div>
 <div id="create-datasets" class="section level2">
 <h2>Create Datasets</h2>
-<p>The R script for creating the modified datasets (shown in code blocks) is primarily based on embedded R code in Appendix C. The first step is to load the <strong>wrv</strong> package, and all its existing datasets, in our R environment.</p>
+<p>The R script for creating the modified datasets (shown in code blocks below) is primarily based on embedded R code in Appendix C. The first step is to load the <strong>wrv</strong> package, and all its existing datasets, in our R environment. To do so, open an R session and paste the following command at the command prompt.</p>
 <pre class="r"><code>library(wrv)</code></pre>
-<p>Each time we create a modified dataset it will mask the previously loaded version.</p>
-<p>Next, commands from the Appendix C R-source-code file (“sir20165080_AppendixC.R”), parse and evaluate the preamble.</p>
+<p>Note that each time we create a modified dataset it will mask the previously loaded version.</p>
+<p>Next, parse and evaluate the preamble commands in the Appendix C R-source-code file (“sir20165080_AppendixC.R”).</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixC.R&quot;, package = &quot;wrv&quot;)
 app.c.r &lt;- readLines(file)
 line &lt;- grep(&quot;## ----download_git&quot;, app.c.r) - 1
 eval(parse(text = app.c.r[1:line]))
 app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
-<p>Skip intial commands for downloading the archived unprocessed-data files to a temporary directory.</p>
+<p>Skip initial commands for downloading the archived unprocessed-data files to a temporary directory.</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----create_data_dir&quot;, app.c.r) - 1
 app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
-<p>Specify the location where the modified unprocessed-data files currently residing under (“inst/extdata”).</p>
+<p>Specify the location of the folder containing the modified unprocessed-data files (“inst/extdata”).</p>
 <pre class="r"><code>dir.git &lt;- file.path(getwd(), &quot;extdata&quot;)</code></pre>
 <p>Parse and evaluate the inital commands for specifying unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----canal_seep_1&quot;, app.c.r) - 1
 eval(parse(text = app.c.r[1:line]))
 app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
 <div id="level-1-data" class="section level3">
-<h3>Level 1 Data</h3>
-<p>Datasets processed at level 1. Code chunks shown below are copy/pasted from Appendix C R-source file located in the <strong>wrv</strong> package (“sir20165080_AppendixC.R”).</p>
+<h3>Level 1 data</h3>
+<p>Processing instructions for creating level 1 modified datasets. The code chunks shown below are copied from the Appendix C R-source file located in the <strong>wrv</strong> package (“sir20165080_AppendixC.R”).</p>
 <div id="combined-surface-water-irrigation-diversions-comb.sw.irr" class="section level4">
 <h4>Combined surface-water irrigation diversions (comb.sw.irr)</h4>
 <p>Read combined surface-water irrigation diversions data and write its external representation as an R object in “data/comb.sw.irr.rda”.</p>
@@ -437,8 +434,8 @@ save(et, file = file.path(dir.dat, &quot;et.rda&quot;), compress = &quot;xz&quot
 </div>
 </div>
 <div id="level-2-data" class="section level3">
-<h3>Level 2 Data</h3>
-<p>Datasets processed at level 2 result from analysis of level 1 data. Parse and evaluate all level 2 datasets and write their external representations as R object in “data”. Datasets include monthly irrigation entity components (<code>entity.components</code>), rasterized canals (<code>r.canals</code>), rasterized monthly irrigation entities (<code>rs.entities</code>), and rasterized monthly recharge on non-irrigated lands (<code>rs.rech.non.irr</code>).</p>
+<h3>Level 2 data</h3>
+<p>Level 2 datasets result from the analysis of level 1 data. Parse and evaluate all level 2 datasets and write their external representations as R objects in “data”. Datasets include monthly irrigation entity components (<code>entity.components</code>), rasterized canals (<code>r.canals</code>), rasterized monthly irrigation entities (<code>rs.entities</code>), and rasterized monthly recharge on non-irrigated lands (<code>rs.rech.non.irr</code>).</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----entity_components_1&quot;, app.c.r) - 1
 app.c.r &lt;- app.c.r[-(1:line)]
 eval(parse(text = app.c.r))</code></pre>
@@ -446,14 +443,14 @@ eval(parse(text = app.c.r))</code></pre>
 </div>
 <div id="process-model" class="section level2">
 <h2>Process Model</h2>
-<p>The R script for processing the model (shown in code blocks) is primarily based on embedded R code in Appendix D.</p>
+<p>The R script for processing the model (shown in code blocks below) is primarily based on embedded R code in Appendix D.</p>
 <div id="pre-process" class="section level3">
 <h3>Pre-process</h3>
 <p>Clear R objects from the current R environment and re-load modified datasets.</p>
 <pre class="r"><code>rm(list = ls())
 files &lt;- list.files(file.path(getwd(), &quot;data&quot;), pattern = &quot;*.rda$&quot;, full.names = TRUE)
 for (i in files) load(i)</code></pre>
-<p>Read Appendix D R-source-code file (“sir20165080_AppendixD.R”) and remove all lines with the <code>invisible(dev.off())</code> command. This command is only useful when copy/pasting directly from the R-source-code file.</p>
+<p>Read Appendix D R-source-code file (“sir20165080_AppendixD.R”) and remove all lines composed of the <code>invisible(dev.off())</code> command. This command is only useful when copy/pasting directly from the R-source-code file.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
 app.d.r &lt;- readLines(file)
 app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]</code></pre>
@@ -480,7 +477,7 @@ file.copy(files, dir.run, overwrite = TRUE)</code></pre>
 </div>
 <div id="save-file-containing-r-objects." class="section level4">
 <h4>Save file containing R objects.</h4>
-<p>Write a few of the R objects to a single binary R-data file in the model-run folder (“model/model.rda”). This R-data file contains the following objects: <code>rs</code>, <code>misc</code>, <code>trib</code>, <code>tr.stress.periods</code>, and <code>ss.stress.periods</code>. A description of each R object is given in the help documentation of the <code>UpdateWaterBudget</code> function in the <strong>wrv</strong> package.</p>
+<p>Write a few of the R objects to a single binary R-data file in the model-run folder (“model/model.rda”).</p>
 <pre class="r"><code>rs &lt;- subset(rs.model, c(&quot;lay1.top&quot;, sprintf(&quot;lay%s.bot&quot;, 1:3)))
 save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
      file = file.path(dir.run, &quot;model.rda&quot;))</code></pre>
@@ -503,7 +500,7 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 </div>
 <div id="post-process" class="section level3">
 <h3>Post-process</h3>
-<p>Both the modified and archived model simualtions are included the post-processing instructions.</p>
+<p>Both the modified and archived model simulations are included the post-processing instructions.</p>
 <div id="read-water-budget-for-archived-simulation" class="section level4">
 <h4>Read water budget for archived simulation</h4>
 <p>Read water budget output for archived simulation, located in “archive” folder, and save results.</p>
@@ -523,7 +520,7 @@ d.trib.arch    &lt;- d.trib</code></pre>
 <pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
 line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))</code></pre>
-<p><img src="figures/fig_1-1.png" width="1074" style="display: block; margin: auto;" /></p>
+<p><img src="figures/graph_water_budget-1.png" width="1074" style="display: block; margin: auto;" /></p>
 <p><strong>Figure:</strong> Volumetric water budget components by year, including annual change in storage, for the entire simulation period, 1995–2010, south-central Idaho—based on the Scenario 2 model results.</p>
 </div>
 <div id="compare-water-budgets" class="section level4">
@@ -664,7 +661,7 @@ app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
 <h4>Compare simulated water tables</h4>
 <p>A comparison between simulated water tables is shown in the following figure.</p>
 <p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during December 2010.</p>
-<p><img src="figures/fig_2-1.png" width="1074" style="display: block; margin: auto;" /></p>
+<p><img src="figures/map_water_tbl_diff-1.png" width="1074" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 </div>

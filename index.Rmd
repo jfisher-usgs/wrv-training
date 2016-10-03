@@ -25,9 +25,9 @@ water use scenarios with the Wood River Valley (WRV) groundwater-flow model.
 
 * 2:00--2:15 Break
 
-* 2:15--3:00 Scenerio 1: an example simulation of managed recharge (Jennifer Sukow, IDWR)
+* 2:15--3:00 Scenario 1: an example simulation of managed recharge (Jennifer Sukow, IDWR)
 
-* **3:00--4:30** [Scenerio 2](scenario-2.html): an example simulation of idling irrigated lands (Jason Fisher, USGS)
+* **3:00--4:30** [Scenario 2](scenario-2.html): an example simulation of idling irrigated lands (Jason Fisher, USGS)
 
 ## Files
 
@@ -43,7 +43,7 @@ a U.S. Geological Survey (USGS) computer code that solves the groundwater-flow e
 
 Files used in this training class are available on a
 [wrv-training repository](https://github.com/jfisher-usgs/wrv-training).
-There will also be a USB-thumb drive distributed in class that contains the repository file structure,
+There will also be a USB-thumb drive distributed in class that contains the repository file and folder structure,
 and includes many other files that result from intermediate steps in data processing.
 These additional files will be helpful if your computer is unable to execute some of processing steps
 because of memory limitations or time constraints.
@@ -80,7 +80,7 @@ And to install the beta version of the **wrv** package use
 ```{r wrv_pkg_install, eval=FALSE}
 install.packages(file.choose(), repos = NULL)
 ```
-You will be prompted to select the location of the local ZIP file "wrv_1.0.3.zip".
+You will be prompted to choose the location of the local ZIP file "wrv_1.0.3.zip".
 
 ## R programming
 
@@ -89,6 +89,7 @@ https://jfisher-usgs.github.io/r-workshop/index.html.
 
 ## Bugs
 
-Please consider reporting bugs, requesting feature requests, and asking questions on the
-[Issues page](https://github.com/jfisher-usgs/wrv-training/issues) for this website.
+Like any project, this website is a work in progress.
+Please consider reporting bugs and asking for clarification on the
+[Issues page](https://github.com/jfisher-usgs/wrv-training/issues).
 Or you can just contact me via email at jfisher@usgs.gov

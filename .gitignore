@@ -2,7 +2,6 @@
 /.Rhistory
 /*.tar.gz
 /*.zip
-/*.R
 /*.pdf
 __packages
 *_rdb
@@ -10,13 +9,13 @@ __packages
 model/**
 archive/*.ref
 archive/qa-*.csv
-archive/*.rda
 archive/*.bat
 archive/*.reference
 archive/*.ba6
 archive/*.bud
 archive/*.dis
 archive/*.drn
+archive/*.exe
 archive/*.hds
 archive/*.lpf
 archive/*.lst

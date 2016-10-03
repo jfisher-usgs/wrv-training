@@ -6,21 +6,19 @@ title: "Scenario 2"
 knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
 ```
 
-## Description
-
-This example scenario describes a transient simulation (1995--2010) of the calibrated model
-converting an existing parcel of irrigated land to "non-irrigated" status;
-that is, the parcel is voluntarily allowed to go idle.
-The land parcel (about 2.4 square kilometers or 600 acres) is shown in the following map:
+This example scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as "non-irrigated";
+that is, what happens when you voluntarily allow an irrigated parcel to go idle?
+Model boundary conditions are modified in the archived calibrated model to best represent this scenario.
+The idled land parcel (about 600 acres, or better yet 2.4-square kilometers) is shown in the following figure.
 
 | ![](images/scenario2-desc_01.png)
 
-Changes to unprocessed-data files include:
+Changes to [unprocessed-data files](https://github.com/USGS-R/wrv/tree/master/inst/extdata) include:
 
 * Irrigated lands ("extdata/irr/irr.lands.\<YYYY\>.zip")---changed parcel status to "non-irrigated".
 
 * Evapotranspiration (ET)("extdata/et/et.\<YYYMM\>.tif")---reduced ET within the parcel
-  and set equal to the monthly precipitation during the irrigation season.
+  and set equal to the monthly precipitation during the irrigation season (April--October).
 
 * Combined surface-water irrigation diversions ("extdata/div/comb.sw.irr.csv")--removed
   diversions associated with wells in parcel.
@@ -30,28 +28,28 @@ Changes to unprocessed-data files include:
 * Well sites ("extdata/div/pod.wells.zip")---removed sites located in parcel.
 
 Files that did not need to be modified for this scenario,
-but may want to consider modifying for similar model scenarios include:
+but may want to considered for modification in similar types of model scenarios include:
 
   * Surface water diversions ("div.sw.csv")---we assumed surface water associated
-    with the idled parcel is now delivered to other junior users within the same canal service area.
+    with the idled parcel is now delivered to other "junior" users within the same canal service area.
 
-  * Groundwater diversions ("div.gw.csv")---if there had been *measured* groundwater diversions
+  * Groundwater diversions ("div.gw.csv")---if there had been "measured" groundwater diversions
     associated with the parcel, those would need to be removed.
 
 ## Create Datasets
 
-The R script for creating the modified datasets (shown in code blocks) is
+The R script for creating the modified datasets (shown in code blocks below) is
 primarily based on embedded R code in Appendix C.
 The first step is to load the **wrv** package, and all its existing datasets, in our R environment.
+To do so, open an R session and paste the following command at the command prompt.
 
-```{r load_wrv}
+```{r load_wrv, message=FALSE}
 library(wrv)
 ```
 
-Each time we create a modified dataset it will mask the previously loaded version.
+Note that each time we create a modified dataset it will mask the previously loaded version.
 
-Next, commands from the Appendix C R-source-code file ("sir20165080_AppendixC.R"),
-parse and evaluate the preamble.
+Next, parse and evaluate the preamble commands in the Appendix C R-source-code file ("sir20165080_AppendixC.R").
 
 ```{r app_c_r_1, message=FALSE}
 file <- system.file("doc", "sir20165080_AppendixC.R", package = "wrv")
@@ -68,7 +66,7 @@ line <- grep("## ----create_data_dir", app.c.r) - 1
 app.c.r <- app.c.r[-(1:line)]
 ```
 
-Specify the location where the modified unprocessed-data files currently residing under ("inst/extdata").
+Specify the location of the folder containing the modified unprocessed-data files ("inst/extdata").
 
 ```{r app_c_r_3, message=FALSE}
 dir.git <- file.path(getwd(), "extdata")
@@ -83,10 +81,10 @@ eval(parse(text = app.c.r[1:line]))
 app.c.r <- app.c.r[-(1:line)]
 ```
 
-### Level 1 Data
+### Level 1 data
 
-Datasets processed at level 1.
-Code chunks shown below are copy/pasted from Appendix C R-source file
+Processing instructions for creating level 1 modified datasets.
+The code chunks shown below are copied from the Appendix C R-source file
 located in the **wrv** package ("sir20165080_AppendixC.R").
 
 #### Combined surface-water irrigation diversions (comb.sw.irr)
@@ -207,11 +205,11 @@ names(et) <- as.character(yr.mo)
 save(et, file = file.path(dir.dat, "et.rda"), compress = "xz")
 ```
 
-### Level 2 Data
+### Level 2 data
 
-Datasets processed at level 2 result from analysis of level 1 data.
+Level 2 datasets result from the analysis of level 1 data.
 Parse and evaluate all level 2 datasets and write their
-external representations as R object in "data".
+external representations as R objects in "data".
 Datasets include monthly irrigation entity components (`entity.components`),
 rasterized canals (`r.canals`),
 rasterized monthly irrigation entities (`rs.entities`), and
@@ -225,7 +223,7 @@ eval(parse(text = app.c.r))
 
 ## Process Model
 
-The R script for processing the model (shown in code blocks) is
+The R script for processing the model (shown in code blocks below) is
 primarily based on embedded R code in Appendix D.
 
 ### Pre-process
@@ -238,7 +236,8 @@ files <- list.files(file.path(getwd(), "data"), pattern = "*.rda$", full.names =
 for (i in files) load(i)
 ```
 
-Read Appendix D R-source-code file ("sir20165080_AppendixD.R") and remove all lines with the `invisible(dev.off())` command.
+Read Appendix D R-source-code file ("sir20165080_AppendixD.R") and remove all lines
+composed of the `invisible(dev.off())` command.
 This command is only useful when copy/pasting directly from the R-source-code file.
 
 ```{r pre_2, eval=TRUE}
@@ -289,8 +288,6 @@ file.copy(files, dir.run, overwrite = TRUE)
 #### Save file containing R objects.
 
 Write a few of the R objects to a single binary R-data file in the model-run folder ("model/model.rda").
-This R-data file contains the following objects: `rs`, `misc`, `trib`, `tr.stress.periods`, and `ss.stress.periods`.
-A description of each R object is given in the help documentation of the `UpdateWaterBudget` function in the **wrv** package.
 
 ```{r rda_1, results="hide"}
 rs <- subset(rs.model, c("lay1.top", sprintf("lay%s.bot", 1:3)))
@@ -348,7 +345,7 @@ d.trib.arch    <- d.trib
 
 Read water budget output for modified simulation, located in "model" folder, and summarize results in the following figure.
 
-```{r fig_1, fig.width=fin.graph[1], fig.height=fin.graph[2], eval=TRUE}
+```{r graph_water_budget, fig.width=fin.graph[1], fig.height=fin.graph[2], eval=TRUE}
 dir.run <- file.path(getwd(), "model")
 line <- grep("## ----table_budget", app.d.r)
 eval(parse(text = app.d.r[1:line]))
@@ -464,7 +461,7 @@ A comparison between simulated water tables is shown in the following figure.
 **Figure:** Simulated water table difference, defined as the archived water table subtracted from
 the modified water table, during December 2010.
 
-```{r fig_2, echo=FALSE, fig.width=fin.map.s[1], fig.height=fin.map.s[2], eval=TRUE}
+```{r map_water_tbl_diff, echo=FALSE, fig.width=fin.map.s[1], fig.height=fin.map.s[2], eval=TRUE}
 FUN <- function(usr, credit=NULL, max.dev.dim=c(21, 56), add.legend=FALSE) {
   Pal <- function(...) {
     Pal1 <- colorRampPalette(c("#F02311", "#F02311", "#FFD0D4"))
