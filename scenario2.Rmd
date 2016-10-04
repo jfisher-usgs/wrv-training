@@ -2,8 +2,8 @@
 title: "Scenario 2"
 ---
 
-```{r, include=FALSE,}
-knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
+```{r, include=FALSE}
+knitr::opts_chunk$set(eval=FALSE, dpi=100, fig.path="figures/")
 ```
 
 This example scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as "non-irrigated";
@@ -243,7 +243,6 @@ This command is only useful when copy/pasting directly from the R-source-code fi
 ```{r pre_2, eval=TRUE}
 file <- system.file("doc", "sir20165080_AppendixD.R", package = "wrv")
 app.d.r <- readLines(file)
-app.d.r <- app.d.r[-grep("invisible.*dev.off", app.d.r)]
 ```
 
 Parse and evaluate all previous commands up to writing model input files.
@@ -265,7 +264,7 @@ dir.run <- file.path(getwd(), "model")
 
 Write model input files to the model-run folder.
 
-```{r pre_5, results="hide"}
+```{r pre_5, results="hide", eval=FALSE}
 WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
                   is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
                   ntime.steps = ntime.steps, verbose = FALSE)
@@ -273,15 +272,16 @@ WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
 
 #### Copy calibrated files
 
-Overwrite model input reference files ("model/\*.ref") containing hydraulic conductivity and storage coefficient values,
-with reference files containing their calibrated values ("archive/\*.ref").
+Overwrite model input files with their calibrated values in the "archive" folder.
+These inlcude the reference data files ("model/\*.ref") containing hydraulic conductivity and storage coefficient values,
+MODFLOW River file ("model/\*.riv"), and MODFLOW Drain file ("model/\*.drn").
 And copy calibrated data for irrigation efficiency ("eff.csv"), canal seepage ("seep.csv"),
 and tributary underflow ("trib.csv") to the model-run folder.
 
-```{r calibrated_1, results="hide"}
+```{r calibrated_1, results="hide", eval=FALSE}
 dir.archive <- file.path(getwd(), "archive")
 files <- list.files(dir.archive, full.names = TRUE)
-files <- files[grep("(\\.ref|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
+files <- files[grep("(\\.ref|\\.riv|\\.drn|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
 file.copy(files, dir.run, overwrite = TRUE)
 ```
 
@@ -289,7 +289,7 @@ file.copy(files, dir.run, overwrite = TRUE)
 
 Write a few of the R objects to a single binary R-data file in the model-run folder ("model/model.rda").
 
-```{r rda_1, results="hide"}
+```{r rda_1, results="hide", eval=FALSE}
 rs <- subset(rs.model, c("lay1.top", sprintf("lay%s.bot", 1:3)))
 save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
      file = file.path(dir.run, "model.rda"))
@@ -299,7 +299,7 @@ save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.av
 
 Run the water-budget calculation and specify function arguments using modified datasets.
 
-```{r update_budget_1, results="hide"}
+```{r update_budget_1, results="hide", eval=FALSE}
 UpdateWaterBudget(dir.run, id, qa.tables = "english", pod.wells = pod.wells,
                   comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
                   entity.components = entity.components, rs.entities = rs.entities)
@@ -309,7 +309,7 @@ UpdateWaterBudget(dir.run, id, qa.tables = "english", pod.wells = pod.wells,
 
 Run the modified-model simulation.
 
-```{r run_modflow_1}
+```{r run_modflow_1, eval=FALSE}
 line <- grep("## ----read_budget", app.d.r)
 eval(parse(text = app.d.r[1:line]))
 ```
@@ -347,6 +347,7 @@ Read water budget output for modified simulation, located in "model" folder, and
 
 ```{r graph_water_budget, fig.width=fin.graph[1], fig.height=fin.graph[2], eval=TRUE}
 dir.run <- file.path(getwd(), "model")
+app.d.r <- app.d.r[-grep("invisible.*dev.off", app.d.r)]
 line <- grep("## ----table_budget", app.d.r)
 eval(parse(text = app.d.r[1:line]))
 ```
@@ -463,13 +464,7 @@ the modified water table, during December 2010.
 
 ```{r map_water_tbl_diff, echo=FALSE, fig.width=fin.map.s[1], fig.height=fin.map.s[2], eval=TRUE}
 FUN <- function(usr, credit=NULL, max.dev.dim=c(21, 56), add.legend=FALSE) {
-  Pal <- function(...) {
-    Pal1 <- colorRampPalette(c("#F02311", "#F02311", "#FFD0D4"))
-    Pal2 <- colorRampPalette(c("#FCFBE3", rep("#67A9CF", 3)))
-    n1 <- round(... * ratio)
-    n2 <- ... - n1
-    return(c(Pal1(n1), Pal2(n2)))
-  }
+  Pal <- function(...) viridis::viridis(...)
   r <-  rs.wt[[nlayers(rs.wt)]] - rs.wt.arch[[nlayers(rs.wt.arch)]]
   r <- crop(r, extent(usr))
   zlim <- range(pretty(range(r[], na.rm=TRUE)))

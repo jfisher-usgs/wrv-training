@@ -2,8 +2,8 @@
 title: "Calibrated Model"
 ---
 
-```{r, include=FALSE,}
-knitr::opts_chunk$set(eval=FALSE, dpi=150, fig.path="figures/")
+```{r, include=FALSE}
+knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 ```
 
 Running and analysing the archived calibrated model.
@@ -16,7 +16,7 @@ Startup an R session.
 Set the working directory of R processes to the "wrv-training" folder.
 To do so, paste the following command in your R session and navigate to the "wrv-training" folder.
 
-```{r set_wd}
+```{r set_wd, eval=FALSE}
 setwd(choose.dir())
 ```
 

@@ -452,8 +452,7 @@ files &lt;- list.files(file.path(getwd(), &quot;data&quot;), pattern = &quot;*.r
 for (i in files) load(i)</code></pre>
 <p>Read Appendix D R-source-code file (“sir20165080_AppendixD.R”) and remove all lines composed of the <code>invisible(dev.off())</code> command. This command is only useful when copy/pasting directly from the R-source-code file.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
-app.d.r &lt;- readLines(file)
-app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]</code></pre>
+app.d.r &lt;- readLines(file)</code></pre>
 <p>Parse and evaluate all previous commands up to writing model input files.</p>
 <pre class="r"><code>line &lt;- grep(&quot;## ----write_modflow_input&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))
@@ -469,10 +468,10 @@ dir.run &lt;- file.path(getwd(), &quot;model&quot;)</code></pre>
                   ntime.steps = ntime.steps, verbose = FALSE)</code></pre>
 <div id="copy-calibrated-files" class="section level4">
 <h4>Copy calibrated files</h4>
-<p>Overwrite model input reference files (“model/*.ref”) containing hydraulic conductivity and storage coefficient values, with reference files containing their calibrated values (“archive/*.ref”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
+<p>Overwrite model input files with their calibrated values in the “archive” folder. These inlcude the reference data files (“model/*.ref”) containing hydraulic conductivity and storage coefficient values, MODFLOW River file (“model/*.riv”), and MODFLOW Drain file (“model/*.drn”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
 <pre class="r"><code>dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
 files &lt;- list.files(dir.archive, full.names = TRUE)
-files &lt;- files[grep(&quot;(\\.ref|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
+files &lt;- files[grep(&quot;(\\.ref|\\.riv|\\.drn|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
 file.copy(files, dir.run, overwrite = TRUE)</code></pre>
 </div>
 <div id="save-file-containing-r-objects." class="section level4">
@@ -518,9 +517,10 @@ d.trib.arch    &lt;- d.trib</code></pre>
 <h4>Read water budget for modified simulation</h4>
 <p>Read water budget output for modified simulation, located in “model” folder, and summarize results in the following figure.</p>
 <pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
+app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]
 line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))</code></pre>
-<p><img src="figures/graph_water_budget-1.png" width="1074" style="display: block; margin: auto;" /></p>
+<p><img src="figures/graph_water_budget-1.png" width="716" style="display: block; margin: auto;" /></p>
 <p><strong>Figure:</strong> Volumetric water budget components by year, including annual change in storage, for the entire simulation period, 1995–2010, south-central Idaho—based on the Scenario 2 model results.</p>
 </div>
 <div id="compare-water-budgets" class="section level4">
@@ -559,9 +559,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow losses</td>
 <td align="right">177,813</td>
-<td align="right">306,807</td>
-<td align="right">128,994</td>
-<td align="right">72.5</td>
+<td align="right">198,665</td>
+<td align="right">20,852</td>
+<td align="right">11.7</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -591,9 +591,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow gains</td>
 <td align="right">251,967</td>
-<td align="right">376,047</td>
-<td align="right">124,080</td>
-<td align="right">49.2</td>
+<td align="right">273,689</td>
+<td align="right">21,722</td>
+<td align="right">8.6</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -607,17 +607,17 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Stanton Crossing outlet boundary</td>
 <td align="right">284</td>
-<td align="right">254</td>
-<td align="right">-30</td>
-<td align="right">-10.5</td>
+<td align="right">284</td>
+<td align="right">0</td>
+<td align="right">0.0</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
 <td align="left">Silver Creek outlet boundary</td>
 <td align="right">9,492</td>
-<td align="right">15,913</td>
-<td align="right">6,421</td>
-<td align="right">67.6</td>
+<td align="right">9,629</td>
+<td align="right">137</td>
+<td align="right">1.4</td>
 </tr>
 <tr class="even">
 <td align="left"></td>
@@ -631,9 +631,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"><strong>Inflow - Outflow</strong></td>
 <td align="left">Change in aquifer storage</td>
 <td align="right">604</td>
-<td align="right">62</td>
-<td align="right">-542</td>
-<td align="right">-89.7</td>
+<td align="right">532</td>
+<td align="right">-73</td>
+<td align="right">-12.0</td>
 </tr>
 </tbody>
 </table>
@@ -661,7 +661,7 @@ app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
 <h4>Compare simulated water tables</h4>
 <p>A comparison between simulated water tables is shown in the following figure.</p>
 <p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during December 2010.</p>
-<p><img src="figures/map_water_tbl_diff-1.png" width="1074" style="display: block; margin: auto;" /></p>
+<p><img src="figures/map_water_tbl_diff-1.png" width="716" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 </div>

@@ -358,7 +358,7 @@ file.copy(files[grep(&quot;\\.exe$&quot;, files)], &quot;archive&quot;, overwrit
 <p>Load R objects from a R-data file in the archive folder (“archive/model.rda”) and list all objects in your R environment.</p>
 <pre class="r"><code>load(&quot;archive/model.rda&quot;)
 cat(ls(), sep = &quot;, &quot;)</code></pre>
-<pre><code>## d.in.mv.ave, misc, reduction, rs, ss.stress.periods, tr.stress.periods, trib</code></pre>
+<pre><code>## d.in.mv.ave, file, files, misc, reduction, rs, ss.stress.periods, tr.stress.periods, trib, url</code></pre>
 <div id="calculate-transmissivity" class="section level3">
 <h3>Calculate transmissivity</h3>
 <p>Transmissivity is a measure of how much water can be transmitted horizontally, such as to a pumping well. To calculate transmissivity values in model layer 1, multiply the layer thickness by the calibrated hydraulic conductivity. Recall that a specified-thickness approximation was made in model construction, in other words, the saturated thickness is assumed to be independent from head changes in the aquifer system. Therefore, we can get away with using layer thickness rather than saturated thickness in layer 1.</p>

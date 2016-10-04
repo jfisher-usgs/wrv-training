@@ -128,29 +128,29 @@ app.d.r <- app.d.r[-(1:line)]
 id <- "wrv_mfusg"
 dir.run <- file.path(getwd(), "model")
 
-## ----pre_5, results="hide"-----------------------------------------------
+## ----pre_5, results="hide", eval=TRUE------------------------------------
 WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
                   is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
                   ntime.steps = ntime.steps, verbose = FALSE)
 
-## ----calibrated_1, results="hide"----------------------------------------
+## ----calibrated_1, results="hide", eval=TRUE-----------------------------
 dir.archive <- file.path(getwd(), "archive")
 files <- list.files(dir.archive, full.names = TRUE)
-files <- files[grep("(\\.ref|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
+files <- files[grep("(\\.ref|\\.riv|\\.drn|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
 file.copy(files, dir.run, overwrite = TRUE)
 
-## ----rda_1, results="hide"-----------------------------------------------
+## ----rda_1, results="hide", eval=TRUE------------------------------------
 rs <- subset(rs.model, c("lay1.top", sprintf("lay%s.bot", 1:3)))
 save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
      file = file.path(dir.run, "model.rda"))
 
-## ----update_budget_1, results="hide"-------------------------------------
+## ----update_budget_1, results="hide", eval=TRUE--------------------------
 UpdateWaterBudget(dir.run, id, qa.tables = "english", pod.wells = pod.wells,
                   comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
                   entity.components = entity.components, rs.entities = rs.entities)
 
 ## ----run_modflow_1-------------------------------------------------------
-line <- grep("## ----read_budget", app.d.r)
+line <- grep("## ----read_budget", app.d.r, eval=TRUE)
 eval(parse(text = app.d.r[1:line]))
 
 ## ----run_modflow_2, echo=-1, eval=TRUE-----------------------------------
