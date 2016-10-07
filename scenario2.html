@@ -322,6 +322,8 @@ div.tocify {
 <li><p>Surface water diversions (“div.sw.csv”)—we assumed surface water associated with the idled parcel is now delivered to other “junior” users within the same canal service area.</p></li>
 <li><p>Groundwater diversions (“div.gw.csv”)—if there had been “measured” groundwater diversions associated with the parcel, those would need to be removed.</p></li>
 </ul>
+<p>Startup an R session. Set the working directory of R processes to the “wrv-training” folder. To do so, paste the following command in your R session and navigate to the “wrv-training” folder.</p>
+<pre class="r"><code>setwd(choose.dir())</code></pre>
 <div id="create-datasets" class="section level2">
 <h2>Create Datasets</h2>
 <p>The R script for creating the modified datasets (shown in code blocks below) is primarily based on embedded R code in Appendix C. The first step is to load the <strong>wrv</strong> package, and all its existing datasets, in our R environment. To do so, open an R session and paste the following command at the command prompt.</p>
@@ -468,10 +470,10 @@ dir.run &lt;- file.path(getwd(), &quot;model&quot;)</code></pre>
                   ntime.steps = ntime.steps, verbose = FALSE)</code></pre>
 <div id="copy-calibrated-files" class="section level4">
 <h4>Copy calibrated files</h4>
-<p>Overwrite model input files with their calibrated values in the “archive” folder. These inlcude the reference data files (“model/*.ref”) containing hydraulic conductivity and storage coefficient values, MODFLOW River file (“model/*.riv”), and MODFLOW Drain file (“model/*.drn”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
+<p>Overwrite model input files with their calibrated values in the “archive” folder. These inlcude the reference data files (“model/*.ref”) containing conductivity and storage coefficient values, MODFLOW River file (“model/*.riv”), MODFLOW Drain file (“model/*.drn”), and MODFLOW Layor Property Flow file (“model/*.lpf”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
 <pre class="r"><code>dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
 files &lt;- list.files(dir.archive, full.names = TRUE)
-files &lt;- files[grep(&quot;(\\.ref|\\.riv|\\.drn|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
+files &lt;- files[grep(&quot;(\\.ref|\\.riv|\\.drn|\\.lpf|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
 file.copy(files, dir.run, overwrite = TRUE)</code></pre>
 </div>
 <div id="save-file-containing-r-objects." class="section level4">
@@ -486,7 +488,8 @@ save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.av
 <p>Run the water-budget calculation and specify function arguments using modified datasets.</p>
 <pre class="r"><code>UpdateWaterBudget(dir.run, id, qa.tables = &quot;english&quot;, pod.wells = pod.wells,
                   comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
-                  entity.components = entity.components, rs.entities = rs.entities)</code></pre>
+                  entity.components = entity.components,
+                  rs.entities = rs.entities)</code></pre>
 </div>
 </div>
 <div id="run-modflow" class="section level3">
@@ -559,9 +562,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow losses</td>
 <td align="right">177,813</td>
-<td align="right">198,665</td>
-<td align="right">20,852</td>
-<td align="right">11.7</td>
+<td align="right">177,512</td>
+<td align="right">-301</td>
+<td align="right">-0.2</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -591,9 +594,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow gains</td>
 <td align="right">251,967</td>
-<td align="right">273,689</td>
-<td align="right">21,722</td>
-<td align="right">8.6</td>
+<td align="right">252,624</td>
+<td align="right">657</td>
+<td align="right">0.3</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -615,9 +618,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Silver Creek outlet boundary</td>
 <td align="right">9,492</td>
-<td align="right">9,629</td>
-<td align="right">137</td>
-<td align="right">1.4</td>
+<td align="right">9,492</td>
+<td align="right">-0</td>
+<td align="right">-0.0</td>
 </tr>
 <tr class="even">
 <td align="left"></td>
@@ -631,9 +634,9 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"><strong>Inflow - Outflow</strong></td>
 <td align="left">Change in aquifer storage</td>
 <td align="right">604</td>
-<td align="right">532</td>
-<td align="right">-73</td>
-<td align="right">-12.0</td>
+<td align="right">581</td>
+<td align="right">-24</td>
+<td align="right">-3.9</td>
 </tr>
 </tbody>
 </table>
@@ -654,13 +657,18 @@ rs.wt.arch &lt;- rs.wt</code></pre>
 <pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
 line &lt;- grep(&quot;## ----map_head_exceedance&quot;, app.d.r)
 eval(parse(text = app.d.r[1:line]))
+# Warning in writeValues(out, v, tr$row[i]): Reached total allocation of 16366Mb: see
+# help(memory.size)
+
+# Warning in writeValues(out, v, tr$row[i]): Reached total allocation of 16366Mb: see
+# help(memory.size)
 line &lt;- grep(&quot;## ----map_wt_e&quot;, app.d.r)
 app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
 </div>
 <div id="compare-simulated-water-tables" class="section level4">
 <h4>Compare simulated water tables</h4>
 <p>A comparison between simulated water tables is shown in the following figure.</p>
-<p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during December 2010.</p>
+<p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during August 2007.</p>
 <p><img src="figures/map_water_tbl_diff-1.png" width="716" style="display: block; margin: auto;" /></p>
 </div>
 </div>

@@ -36,6 +36,14 @@ but may want to considered for modification in similar types of model scenarios 
   * Groundwater diversions ("div.gw.csv")---if there had been "measured" groundwater diversions
     associated with the parcel, those would need to be removed.
 
+Startup an R session.
+Set the working directory of R processes to the "wrv-training" folder.
+To do so, paste the following command in your R session and navigate to the "wrv-training" folder.
+
+```{r set_wd, eval=FALSE}
+setwd(choose.dir())
+```
+
 ## Create Datasets
 
 The R script for creating the modified datasets (shown in code blocks below) is
@@ -273,15 +281,17 @@ WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
 #### Copy calibrated files
 
 Overwrite model input files with their calibrated values in the "archive" folder.
-These inlcude the reference data files ("model/\*.ref") containing hydraulic conductivity and storage coefficient values,
-MODFLOW River file ("model/\*.riv"), and MODFLOW Drain file ("model/\*.drn").
+These inlcude the reference data files ("model/\*.ref") containing
+ conductivity and storage coefficient values,
+MODFLOW River file ("model/\*.riv"), MODFLOW Drain file ("model/\*.drn"), and
+MODFLOW Layor Property Flow file ("model/\*.lpf").
 And copy calibrated data for irrigation efficiency ("eff.csv"), canal seepage ("seep.csv"),
 and tributary underflow ("trib.csv") to the model-run folder.
 
-```{r calibrated_1, results="hide", eval=FALSE}
+```{r calibrated_1, results="hide", eval=TRUE}
 dir.archive <- file.path(getwd(), "archive")
 files <- list.files(dir.archive, full.names = TRUE)
-files <- files[grep("(\\.ref|\\.riv|\\.drn|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
+files <- files[grep("(\\.ref|\\.riv|\\.drn|\\.lpf|eff\\.csv|seep\\.csv|trib\\.csv)$", files)]
 file.copy(files, dir.run, overwrite = TRUE)
 ```
 
@@ -289,7 +299,7 @@ file.copy(files, dir.run, overwrite = TRUE)
 
 Write a few of the R objects to a single binary R-data file in the model-run folder ("model/model.rda").
 
-```{r rda_1, results="hide", eval=FALSE}
+```{r rda_1, results="hide", eval=TRUE}
 rs <- subset(rs.model, c("lay1.top", sprintf("lay%s.bot", 1:3)))
 save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
      file = file.path(dir.run, "model.rda"))
@@ -302,7 +312,8 @@ Run the water-budget calculation and specify function arguments using modified d
 ```{r update_budget_1, results="hide", eval=FALSE}
 UpdateWaterBudget(dir.run, id, qa.tables = "english", pod.wells = pod.wells,
                   comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
-                  entity.components = entity.components, rs.entities = rs.entities)
+                  entity.components = entity.components,
+                  rs.entities = rs.entities)
 ```
 
 ### Run MODFLOW
@@ -409,7 +420,8 @@ flow <- as.integer(abs(flow))
 flow[11] <- sum(flow[1:3]) - sum(flow[5:9])
 flow <- flow * m3.per.d.to.af.per.yr
 
-d <- data.frame(flow.direction, flow.components, flow.arch, flow, stringsAsFactors=FALSE)
+d <- data.frame(flow.direction, flow.components, flow.arch, flow,
+                stringsAsFactors=FALSE)
 rownames(d) <- NULL
 
 d$difference <- NA
@@ -418,7 +430,8 @@ d$difference <- d[, 4] - d[, 3]
 d$percent.change <- NA
 d$percent.change <- ((d[, 4] - d[, 3]) / d[, 3]) * 100
 
-columns <- c("", "Component", "Archived rate<br>(acre-ft/yr)", "Modified rate<br>(acre-ft/yr)",
+columns <- c("", "Component", "Archived rate<br>(acre-ft/yr)",
+             "Modified rate<br>(acre-ft/yr)",
              "Difference<br>(arce-ft/yr)", "Percent<br>change")
 colnames(d) <- columns
 d[, 3] <- formatC(d[, 3], format="f", digits=0, big.mark=",")
@@ -460,12 +473,13 @@ app.d.r <- app.d.r[-(1:line)]
 A comparison between simulated water tables is shown in the following figure.
 
 **Figure:** Simulated water table difference, defined as the archived water table subtracted from
-the modified water table, during December 2010.
+the modified water table, during August 2007.
 
 ```{r map_water_tbl_diff, echo=FALSE, fig.width=fin.map.s[1], fig.height=fin.map.s[2], eval=TRUE}
 FUN <- function(usr, credit=NULL, max.dev.dim=c(21, 56), add.legend=FALSE) {
-  Pal <- function(...) viridis::viridis(...)
-  r <-  rs.wt[[nlayers(rs.wt)]] - rs.wt.arch[[nlayers(rs.wt.arch)]]
+  Pal <- function(...) rev(viridis::viridis(...))
+  compare.date <- "2007-08-16"
+  r <-  rs.wt[[compare.date]] - rs.wt.arch[[compare.date]]
   r <- crop(r, extent(usr))
   zlim <- range(pretty(range(r[], na.rm=TRUE)))
   explanation <- "Hydraulic head differnce, in meters"

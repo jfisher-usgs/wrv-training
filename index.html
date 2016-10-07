@@ -337,9 +337,14 @@ div.tocify {
 <p>First remove any previous version of the <strong>wrv</strong> package you may have installed by opening an R session and typing the following command:</p>
 <pre class="r"><code>remove.packages(&quot;wrv&quot;)</code></pre>
 <p>To install the <strong>inlmisc</strong> package and its dependencies from CRAN use</p>
-<pre class="r"><code>install.packages(&quot;inlmisc&quot;, repos = &quot;https://cloud.r-project.org/&quot;, dependencies = TRUE)</code></pre>
+<pre class="r"><code>install.packages(&quot;inlmisc&quot;, repos = &quot;https://cloud.r-project.org/&quot;, 
+                 dependencies = TRUE)</code></pre>
 <p>And to install the beta version of the <strong>wrv</strong> package use</p>
-<pre class="r"><code>install.packages(file.choose(), repos = NULL)</code></pre>
+<pre class="r"><code>install.packages(file.choose(), repos = NULL)
+
+install.packages(c(&quot;animation&quot;, &quot;dataRetrieval&quot;, &quot;git2r&quot;, &quot;knitr&quot;, &quot;RCurl&quot;, 
+                   &quot;sfsmisc&quot;, &quot;viridis&quot;, &quot;xtable&quot;), 
+                 repos = &quot;https://cloud.r-project.org/&quot;)</code></pre>
 <p>You will be prompted to choose the location of the local ZIP file “wrv_1.0.3.zip”.</p>
 </div>
 <div id="r-programming" class="section level2">

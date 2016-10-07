@@ -72,13 +72,18 @@ remove.packages("wrv")
 To install the **inlmisc** package and its dependencies from CRAN use
 
 ```{r inlmisc_pkg_install, eval=FALSE}
-install.packages("inlmisc", repos = "https://cloud.r-project.org/", dependencies = TRUE)
+install.packages("inlmisc", repos = "https://cloud.r-project.org/", 
+                 dependencies = TRUE)
 ```
 
 And to install the beta version of the **wrv** package use
 
 ```{r wrv_pkg_install, eval=FALSE}
 install.packages(file.choose(), repos = NULL)
+
+install.packages(c("animation", "dataRetrieval", "git2r", "knitr", "RCurl", 
+                   "sfsmisc", "viridis", "xtable"), 
+                 repos = "https://cloud.r-project.org/")
 ```
 You will be prompted to choose the location of the local ZIP file "wrv_1.0.3.zip".
 
