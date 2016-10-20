@@ -348,13 +348,14 @@ app.c.chunks &lt;- ReadCodeChunks(file)
 file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
 app.d.chunks &lt;- ReadCodeChunks(file)</code></pre>
 <p>Each of the relevant code chunks is labeled with a unique name. For example, the following command retrieves the code chunk named “write_modflow_input” in appendix D:</p>
-<pre class="r"><code>app.d.chunks[[&quot;write_modflow_input&quot;]]</code></pre>
-<pre><code>## [1] &quot;## ----write_modflow_input-------------------------------------------------&quot;     
-## [2] &quot;id &lt;- \&quot;wrv_mfusg\&quot;  # model run identifier&quot;                                     
-## [3] &quot;dir.run &lt;- \&quot;model/model1\&quot;&quot;                                                     
-## [4] &quot;WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,&quot;  
-## [5] &quot;                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,&quot;
-## [6] &quot;                  ntime.steps = ntime.steps, verbose = FALSE)&quot;</code></pre>
+<pre class="r"><code>chunk &lt;- app.d.chunks[[&quot;write_modflow_input&quot;]]
+print(chunk)</code></pre>
+<pre><code>[1] &quot;## ----write_modflow_input-------------------------------------------------&quot;     
+[2] &quot;id &lt;- \&quot;wrv_mfusg\&quot;  # model run identifier&quot;                                     
+[3] &quot;dir.run &lt;- \&quot;model/model1\&quot;&quot;                                                     
+[4] &quot;WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,&quot;  
+[5] &quot;                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,&quot;
+[6] &quot;                  ntime.steps = ntime.steps, verbose = FALSE)&quot;                   </code></pre>
 </div>
 <div id="create-modified-datasets" class="section level2">
 <h2>Create Modified Datasets</h2>
@@ -364,15 +365,36 @@ app.d.chunks &lt;- ReadCodeChunks(file)</code></pre>
 <pre class="r"><code>folder &lt;- &quot;extdata&quot;
 files &lt;- list.files(folder, full.names = TRUE, recursive = TRUE)
 dirs &lt;- file.path(tempdir(), unique(dirname(files)))
-sapply(dirs, function(i) dir.create(i, recursive = TRUE))
-file.copy(files, file.path(tempdir(), files))
-dir.in &lt;- file.path(tempdir(), &quot;extdata&quot;)
+sapply(dirs, function(i) dir.create(i, recursive = TRUE))</code></pre>
+<pre><code># C:\\Users\\jfisher\\AppData\\Local\\Temp\\Rtmp8M0CqH/extdata/div 
+#                                                             TRUE 
+#  C:\\Users\\jfisher\\AppData\\Local\\Temp\\Rtmp8M0CqH/extdata/et 
+#                                                             TRUE 
+# C:\\Users\\jfisher\\AppData\\Local\\Temp\\Rtmp8M0CqH/extdata/irr 
+#                                                             TRUE</code></pre>
+<pre class="r"><code>file.copy(files, file.path(tempdir(), files))</code></pre>
+<pre><code>#   [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [15] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [29] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [43] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [57] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [71] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [85] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+#  [99] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [113] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [127] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [141] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [155] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [169] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [183] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+# [197] TRUE TRUE TRUE TRUE TRUE TRUE</code></pre>
+<pre class="r"><code>dir.in &lt;- file.path(tempdir(), &quot;extdata&quot;)
 files &lt;- list.files(dir.in, pattern = &quot;*.zip$&quot;, full.names = TRUE, recursive = TRUE)
 for (i in files) unzip(i, exdir = dirname(i))</code></pre>
 <p>Create a folder in your working directory where modified R-data files will be written.</p>
 <pre class="r"><code>dir.out &lt;- &quot;data&quot;
 dir.create(dir.out, showWarnings = FALSE)</code></pre>
-<p>Parse and evaluate the initial commands for specifying the unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
+<p>Run the initial commands for specifying the unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
 <pre class="r"><code>chunk.names &lt;- c(&quot;unit_conversions&quot;, &quot;crs&quot;, &quot;spatial&quot;, &quot;high_res_spatial&quot;, &quot;temporal&quot;)
 eval(parse(text = unlist(app.c.chunks[chunk.names])))</code></pre>
 <div id="level-1-data" class="section level3">
@@ -440,7 +462,7 @@ file.copy(files, &quot;model&quot;, overwrite = TRUE)</code></pre>
 <pre class="r"><code>id &lt;- &quot;wrv_mfusg&quot;</code></pre>
 <p>Load R objects from the “model/model.rda” file into your R environment, these objects include <code>d.in.mv.ave</code>, <code>misc</code>, <code>reduction</code>, <code>rs</code>, <code>ss.stress.periods</code>, <code>tr.stress.periods</code>, and <code>trib</code>. A description of each R object is given in the help documentation of the <code>UpdateWaterBudget</code> function in the <strong>wrv</strong> package.</p>
 <pre class="r"><code>load(&quot;model/model.rda&quot;)</code></pre>
-<p>The <code>rs</code> object in the appendix D code is named “rs.model”; use the following command to address this issue:</p>
+<p>The <code>rs</code> object in the appendix D code is named <code>rs.model</code>; use the following command to address this issue:</p>
 <pre class="r"><code>rs.model &lt;- rs</code></pre>
 </div>
 <div id="run-water-balance-model" class="section level3">
@@ -459,9 +481,14 @@ setwd(wd)</code></pre>
 </div>
 <div id="read-water-budgets" class="section level3">
 <h3>Read water budgets</h3>
-<p>Read water-budget output for the archived calibrated simulation, located in the “archive” folder, and save the results for later use. To do so, run (parse and evaluate) the code chunks named “read_budget_1” and “read_budget_2” in Appendix D using the following commands:</p>
+<p>Read water-budget output for the archived calibrated simulation, located in the “archive” folder, and save the results for later use. To do so, run the code chunks named “read_budget_1” and “read_budget_2” in Appendix D using the following commands:</p>
 <pre class="r"><code>dir.run &lt;- &quot;archive&quot;
 eval(parse(text = unlist(app.d.chunks[paste0(&quot;read_budget_&quot;, 1:2)])))</code></pre>
+<pre><code># Warning in match(x, levels): Reached total allocation of 16366Mb: see
+# help(memory.size)
+
+# Warning in match(x, levels): Reached total allocation of 16366Mb: see
+# help(memory.size)</code></pre>
 <p>And save the average volumetric flow rates to an R object named “budget1” using</p>
 <pre class="r"><code>budget1 &lt;- c(&quot;Water-table recharge&quot;             = mean(d.rech$flow.in),
              &quot;Streamflow losses&quot;                = mean(d.river$flow.in),
@@ -626,7 +653,7 @@ knitr::kable(d, format = &quot;markdown&quot;, padding = 0, booktabs = TRUE, dig
 <div id="read-hydraulic-heads" class="section level3">
 <h3>Read hydraulic heads</h3>
 <p>Read simulated hydraulic heads for archived simulation, located in “archive” folder, and save results.</p>
-<p>Read the simulated hydraulic head (head) output for the archived calibrated model, located in the “archive” folder, and save the results for later use. To do so, run (parse and evaluate) the code chunk named “read_head” in Appendix D using the following commands:</p>
+<p>Read the simulated hydraulic head (head) output for the archived calibrated model, located in the “archive” folder, and save the results for later use. To do so, run the code chunk named “read_head” in Appendix D using the following commands:</p>
 <pre class="r"><code>dir.run &lt;- &quot;archive&quot;
 eval(parse(text = app.d.chunks[[&quot;read_head&quot;]]))</code></pre>
 <p>And save the simulated heads in model layer 1 on August 16, 2007 to an R object named “head1” using</p>
@@ -661,7 +688,7 @@ PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim, bg.image = hill.shadin
         explanation = explanation, credit = &quot;&quot;, contour.lines = list(col = &quot;#1F1F1F&quot;))
 legend(&quot;topright&quot;, &quot;Contour line&quot;, col=&quot;#1F1F1F&quot;, lty = 1, lwd = 0.5,
        inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = &quot;#FFFFFFCD&quot;)</code></pre>
-<p><img src="figures/map_water_tbl_diff-1.png" width="716" /></p>
+<p><img src="figures/map_water_tbl_diff-1.png" width="716" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 
