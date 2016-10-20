@@ -14,14 +14,14 @@
 <title>Scenario 2</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <link rel="stylesheet"
@@ -97,6 +97,7 @@ button.code-folding-btn:focus {
   outline: none;
 }
 </style>
+
 
 <style type="text/css">
 /* padding for bootstrap navbar */
@@ -307,7 +308,7 @@ div.tocify {
 </div>
 
 
-<p>This example scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as “non-irrigated”; that is, what happens when you voluntarily allow an irrigated parcel to go idle? Model boundary conditions are modified in the archived calibrated model to best represent this scenario. The idled land parcel (about 600 acres, or better yet 2.4-square kilometers) is shown in the following figure.</p>
+<p>These instructions describe how to build, run, and analyze an example model scenario (Scenario 2). The model scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as “non-irrigated”; that is, what happens when you voluntarily allow an irrigated parcel to go idle. Model boundary conditions are modified in the archived calibrated model to best represent this scenario. The idled land parcel (about 600 acres, or better yet 2.4-square kilometers) is shown in the following figure.</p>
 <p><img src="images/scenario2-desc_01.png" /></p>
 <p>Changes to <a href="https://github.com/USGS-R/wrv/tree/master/inst/extdata">unprocessed-data files</a> include:</p>
 <ul>
@@ -322,229 +323,210 @@ div.tocify {
 <li><p>Surface water diversions (“div.sw.csv”)—we assumed surface water associated with the idled parcel is now delivered to other “junior” users within the same canal service area.</p></li>
 <li><p>Groundwater diversions (“div.gw.csv”)—if there had been “measured” groundwater diversions associated with the parcel, those would need to be removed.</p></li>
 </ul>
-<p>Startup an R session. Set the working directory of R processes to the “wrv-training” folder. To do so, paste the following command in your R session and navigate to the “wrv-training” folder.</p>
-<pre class="r"><code>setwd(choose.dir())</code></pre>
-<div id="create-datasets" class="section level2">
-<h2>Create Datasets</h2>
-<p>The R script for creating the modified datasets (shown in code blocks below) is primarily based on embedded R code in Appendix C. The first step is to load the <strong>wrv</strong> package, and all its existing datasets, in our R environment. To do so, open an R session and paste the following command at the command prompt.</p>
-<pre class="r"><code>library(wrv)</code></pre>
-<p>Note that each time we create a modified dataset it will mask the previously loaded version.</p>
-<p>Next, parse and evaluate the preamble commands in the Appendix C R-source-code file (“sir20165080_AppendixC.R”).</p>
+<p>Startup an R session. Set the working directory to the local wrv-training repository, that is the “wrv-training” folder, by typing the following command in your R console and making sure to change the file path to the correct location:</p>
+<pre class="r"><code>setwd(&quot;I:/Software/wrv-training&quot;)</code></pre>
+<p>Load the <strong>wrv</strong>, <a href="https://CRAN.R-project.org/package=inlmisc"><strong>inlmisc</strong></a>, <a href="https://CRAN.R-project.org/package=raster"><strong>raster</strong></a>, and <a href="https://CRAN.R-project.org/package=rgdal"><strong>rgdal</strong></a> packages into your current R environment, using</p>
+<pre class="r"><code>lapply(c(&quot;wrv&quot;, &quot;inlmisc&quot;, &quot;raster&quot;, &quot;rgdal&quot;), library, character.only = TRUE)</code></pre>
+<div id="code-chunks" class="section level2">
+<h2>Code Chunks</h2>
+<p>Most of the R code that we need for building, running, and analyzing Scenario 2 is contained within the appendix files. Rather than rewrite all the relevant code here, we will instead write a simple function to read code chunks within an appendix code file.</p>
+<pre class="r"><code>ReadCodeChunks &lt;- function(file) {
+  src &lt;- readLines(file)
+  src &lt;- src[src != &quot;&quot;]
+  lin &lt;- grep(&quot;## ----&quot;, src)
+  nam &lt;- gsub(&quot;#|-| |\\,.*&quot;, &quot;&quot;, src[lin])
+  is.unnamed &lt;- which(grepl(&quot;=&quot;, nam) | nam == &quot;&quot;)
+  nam[is.unnamed] &lt;- paste0(&quot;unnamed-chunk-&quot;, is.unnamed)
+  m &lt;- cbind(from = lin, to = c(lin[-1] - 1, length(src)))
+  chunks &lt;- apply(m, 1, function(x) src[x[1]:x[2]])
+  names(chunks) &lt;- nam
+  return(chunks)
+}</code></pre>
+<p>Let’s put our new function to use by reading in code chunks from appendix C and D.</p>
 <pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixC.R&quot;, package = &quot;wrv&quot;)
-app.c.r &lt;- readLines(file)
-line &lt;- grep(&quot;## ----download_git&quot;, app.c.r) - 1
-eval(parse(text = app.c.r[1:line]))
-app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
-<p>Skip initial commands for downloading the archived unprocessed-data files to a temporary directory.</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----create_data_dir&quot;, app.c.r) - 1
-app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
-<p>Specify the location of the folder containing the modified unprocessed-data files (“inst/extdata”).</p>
-<pre class="r"><code>dir.git &lt;- file.path(getwd(), &quot;extdata&quot;)</code></pre>
-<p>Parse and evaluate the inital commands for specifying unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----canal_seep_1&quot;, app.c.r) - 1
-eval(parse(text = app.c.r[1:line]))
-app.c.r &lt;- app.c.r[-(1:line)]</code></pre>
+app.c.chunks &lt;- ReadCodeChunks(file)
+file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
+app.d.chunks &lt;- ReadCodeChunks(file)</code></pre>
+<p>Each of the relevant code chunks is labeled with a unique name. For example, the following command retrieves the code chunk named “write_modflow_input” in appendix D:</p>
+<pre class="r"><code>app.d.chunks[[&quot;write_modflow_input&quot;]]</code></pre>
+<pre><code>## [1] &quot;## ----write_modflow_input-------------------------------------------------&quot;     
+## [2] &quot;id &lt;- \&quot;wrv_mfusg\&quot;  # model run identifier&quot;                                     
+## [3] &quot;dir.run &lt;- \&quot;model/model1\&quot;&quot;                                                     
+## [4] &quot;WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,&quot;  
+## [5] &quot;                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,&quot;
+## [6] &quot;                  ntime.steps = ntime.steps, verbose = FALSE)&quot;</code></pre>
+</div>
+<div id="create-modified-datasets" class="section level2">
+<h2>Create Modified Datasets</h2>
+<p>Every time we create a modified dataset it masks its <strong>wrv</strong>-package version. The R script for creating the modified datasets is primarily based on code chunks in Appendix C. Run (parse and evaluate) the code chunk named “setup” in Appendix C using the following command:</p>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;setup&quot;]]))</code></pre>
+<p>Specify the folder in your working directory that contains the modified unprocessed-data files (“extdata”) and place them in a temporary directory as uncompressed files using</p>
+<pre class="r"><code>folder &lt;- &quot;extdata&quot;
+files &lt;- list.files(folder, full.names = TRUE, recursive = TRUE)
+dirs &lt;- file.path(tempdir(), unique(dirname(files)))
+sapply(dirs, function(i) dir.create(i, recursive = TRUE))
+file.copy(files, file.path(tempdir(), files))
+dir.in &lt;- file.path(tempdir(), &quot;extdata&quot;)
+files &lt;- list.files(dir.in, pattern = &quot;*.zip$&quot;, full.names = TRUE, recursive = TRUE)
+for (i in files) unzip(i, exdir = dirname(i))</code></pre>
+<p>Create a folder in your working directory where modified R-data files will be written.</p>
+<pre class="r"><code>dir.out &lt;- &quot;data&quot;
+dir.create(dir.out, showWarnings = FALSE)</code></pre>
+<p>Parse and evaluate the initial commands for specifying the unit conversions, coordinate reference system (CRS), and common spatial/temporal grid.</p>
+<pre class="r"><code>chunk.names &lt;- c(&quot;unit_conversions&quot;, &quot;crs&quot;, &quot;spatial&quot;, &quot;high_res_spatial&quot;, &quot;temporal&quot;)
+eval(parse(text = unlist(app.c.chunks[chunk.names])))</code></pre>
 <div id="level-1-data" class="section level3">
 <h3>Level 1 data</h3>
-<p>Processing instructions for creating level 1 modified datasets. The code chunks shown below are copied from the Appendix C R-source file located in the <strong>wrv</strong> package (“sir20165080_AppendixC.R”).</p>
+<p>These are processing instructions for creating level 1 modified datasets.</p>
 <div id="combined-surface-water-irrigation-diversions-comb.sw.irr" class="section level4">
 <h4>Combined surface-water irrigation diversions (comb.sw.irr)</h4>
 <p>Read combined surface-water irrigation diversions data and write its external representation as an R object in “data/comb.sw.irr.rda”.</p>
-<pre class="r"><code>file &lt;- file.path(dir.git, &quot;div/comb.sw.irr.csv&quot;)
-comb.sw.irr &lt;- read.csv(file, strip.white = TRUE)
-comb.sw.irr$Pdate &lt;- as.Date(comb.sw.irr$Pdate, format = &quot;%m/%d/%Y&quot;)
-comb.sw.irr$MaxDivRate &lt;- comb.sw.irr$MaxDivRate * cfs.to.m3.per.d
-save(comb.sw.irr, file = file.path(dir.dat, &quot;comb.sw.irr.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;comb_sw_irr_1&quot;]]))</code></pre>
 </div>
 <div id="points-of-diversion-for-groundwater-pod.gw" class="section level4">
 <h4>Points of diversion for groundwater (pod.gw)</h4>
 <p>Read points of diversion for groundwater data and write its external representation as an R object in “data/pod.gw.csv.rda”.</p>
-<pre class="r"><code>file &lt;- file.path(dir.git, &quot;div/pod.gw.csv&quot;)
-d &lt;- read.csv(file, strip.white = TRUE, stringsAsFactors = FALSE)
-d$Pdate &lt;- as.Date(d$PriorityDa, format = &quot;%m/%d/%Y&quot;)
-d$IrrRate &lt;- d$IRRcfs * cfs.to.m3.per.d
-columns &lt;- c(&quot;WMISNumber&quot;, &quot;WaterRight&quot;, &quot;EntityName&quot;, &quot;EntitySrce&quot;, &quot;Pdate&quot;, &quot;IrrRate&quot;)
-pod.gw &lt;- d[, columns]
-save(pod.gw, file = file.path(dir.dat, &quot;pod.gw.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;pod_gw_1&quot;]]))</code></pre>
 </div>
 <div id="well-completions-pod.wells" class="section level4">
 <h4>Well completions (pod.wells)</h4>
-<p>Read well completions data and initialize new variable in its data table.</p>
-<pre class="r"><code>path &lt;- file.path(dir.git, &quot;div&quot;)
-pod.wells &lt;- readOGR(dsn = path, layer = &quot;pod.wells&quot;, verbose = FALSE)
-pod.wells &lt;- spTransform(pod.wells, crs)
-d &lt;- pod.wells@data
-columns &lt;- c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
-d[, columns] &lt;- d[, columns] * ft.to.m
-d[d$TopOpen1 == 0 | d$BotOpen1 == 0, c(&quot;TopOpen1&quot;, &quot;BotOpen1&quot;)] &lt;- NA
-d[d$TopOpen2 == 0 | d$BotOpen2 == 0, c(&quot;TopOpen2&quot;, &quot;BotOpen2&quot;)] &lt;- NA</code></pre>
-<p>A missing well completion is assumed identical to the completion of its nearest-neighbor well. Write its external representation as an R object in “data/pod.wells.rda”.</p>
-<pre class="r"><code>is.pred &lt;- is.na(d$TopOpen1)
-dists &lt;- as.matrix(dist(coordinates(pod.wells)))
-dists &lt;- dists[!is.pred &amp; d$WellUse %in% &quot;Irrigation&quot;, ]
-nearest.well &lt;- as.integer(apply(dists, 2, function(i) names(which.min(i))))
-d$TopOpen1[is.pred] &lt;- d$TopOpen1[nearest.well[is.pred]]
-d$BotOpen1[is.pred] &lt;- d$BotOpen1[nearest.well[is.pred]]
-columns &lt;- c(&quot;WMISNumber&quot;, &quot;WellUse&quot;, &quot;TopOpen1&quot;, &quot;BotOpen1&quot;, &quot;TopOpen2&quot;, &quot;BotOpen2&quot;)
-pod.wells@data &lt;- d[, columns]
-save(pod.wells, file = file.path(dir.dat, &quot;pod.wells.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+<p>Read well completions data and write its external representation as an R object in “data/pod.wells.rda”.</p>
+<pre class="r"><code>eval(parse(text = unlist(app.c.chunks[c(&quot;pod_wells_1&quot;, &quot;pod_wells_2&quot;)])))</code></pre>
 </div>
 <div id="irrigation-lands-irr.lands" class="section level4">
 <h4>Irrigation lands (irr.lands)</h4>
 <p>Read irrigated and semi-irrigated lands data and write its external representation as an R object in “data/irr.lands.rda”.</p>
-<pre class="r"><code>path &lt;- file.path(dir.git, &quot;irr&quot;)
-yr &lt;- c(1996, 2000, 2002, 2006, 2008, 2009, 2010)
-files &lt;- paste0(&quot;irr.lands.&quot;, yr)
-irr.lands &lt;- list()
-for (i in seq_along(files)) {
-  p &lt;- readOGR(dsn = path, layer = files[i], verbose = FALSE)
-  p &lt;- spTransform(p, crs)
-  p@data &lt;- p@data[, paste0(&quot;STATUS_&quot;, substr(yr[i], 1, 3)), drop = FALSE]
-  names(p@data) &lt;- &quot;Status&quot;
-  p &lt;- p[p@data[, &quot;Status&quot;] != &quot;non-irrigated&quot;, ]
-  p &lt;- rgeos::gBuffer(p, width = 0, byid = TRUE)
-  p@data &lt;- droplevels(p@data)
-  irr.lands[[i]] &lt;- p
-}
-names(irr.lands) &lt;- as.character(yr)
-save(irr.lands, file = file.path(dir.dat, &quot;irr.lands.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;irr_lands_1&quot;]]))</code></pre>
 </div>
 <div id="evapotranspiration-et" class="section level4">
 <h4>Evapotranspiration (et)</h4>
-<p>Read evapotranspiration (ET) data and average by month. Note that ET raster files (“.tif”) are required for every month in the simulation, not just months with modified values.</p>
-<pre class="r"><code>files &lt;- file.path(dir.git, &quot;et&quot;, paste0(&quot;et.&quot;, yr.mo, &quot;.tif&quot;))
-FUN &lt;- function(i) {
-  r &lt;- readGDAL(files[i], band = 1, silent = TRUE)
-  r[[1]] &lt;- r[[1]] * mm.to.m
-  return(r)
-}
-et.raw &lt;- lapply(seq_along(files), FUN)
-names(et.raw) &lt;- as.character(yr.mo)</code></pre>
-<p>Project raster data into model grid and place an upper and lower limit on ET that is 3 standard deviations from the mean value. Write its external representation as an R object in “data/et.rda”.</p>
-<pre class="r"><code>high.res.spatial.grid &lt;- disaggregate(spatial.grid, fact = 5L) # added line
-is.missing &lt;- is.na(alluvium.thickness)
-FUN &lt;- function(i) {
-  r &lt;- aggregate(projectRaster(raster(i), high.res.spatial.grid), fact = 5L)
-  r[is.missing] &lt;- NA
-  upper.limit &lt;- mean(r[], na.rm = TRUE) + sd(r[], na.rm = TRUE) * 3
-  r[r &gt; upper.limit] &lt;- upper.limit
-  return(round(r, digits = 6))
-}
-et &lt;- stack(lapply(et.raw, FUN), quick = TRUE)
-names(et) &lt;- as.character(yr.mo)
-save(et, file = file.path(dir.dat, &quot;et.rda&quot;), compress = &quot;xz&quot;)</code></pre>
+<p>Read evapotranspiration (ET) data and write its external representation as an R object in “data/et.rda”. Note that unprocessed ET raster files (“.tif”) are required for every month in the simulation, not just months with modified values.</p>
+<pre class="r"><code>eval(parse(text = unlist(app.c.chunks[c(&quot;et_1&quot;, &quot;et_2&quot;)])))</code></pre>
 </div>
 </div>
 <div id="level-2-data" class="section level3">
 <h3>Level 2 data</h3>
-<p>Level 2 datasets result from the analysis of level 1 data. Parse and evaluate all level 2 datasets and write their external representations as R objects in “data”. Datasets include monthly irrigation entity components (<code>entity.components</code>), rasterized canals (<code>r.canals</code>), rasterized monthly irrigation entities (<code>rs.entities</code>), and rasterized monthly recharge on non-irrigated lands (<code>rs.rech.non.irr</code>).</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----entity_components_1&quot;, app.c.r) - 1
-app.c.r &lt;- app.c.r[-(1:line)]
-eval(parse(text = app.c.r))</code></pre>
+<p>These are processing instructions for creating level 2 modified datasets. Recall that level 2 datasets are dependent on level 1 data.</p>
+<div id="monthly-irrigation-entity-components-entity.components" class="section level4">
+<h4>Monthly irrigation entity components (entity.components)</h4>
+<p>Write an external representation of monthly irrigation entity components as an R object in “data/entitiy.components.rda”.</p>
+<pre class="r"><code>eval(parse(text = unlist(app.c.chunks[paste0(&quot;entity_components_&quot;, 1:3)])))</code></pre>
+</div>
+<div id="rasterized-monthly-irrigation-entities-rs.entities" class="section level4">
+<h4>Rasterized monthly irrigation entities (rs.entities)</h4>
+<p>Write an external representation of monthly irrigation entities as an R object in “data/rs.entities.rda”</p>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;rs_entities_1&quot;]]))</code></pre>
+</div>
+<div id="rasterized-monthly-recharge-on-non-irrigated-lands-rs.rech.non.irr" class="section level4">
+<h4>Rasterized monthly recharge on non-irrigated lands (rs.rech.non.irr)</h4>
+<p>Write an external representation of monthly recharge on non-irrigated lands as an R object in “data/rs.rech.non.irr.rda”.</p>
+<pre class="r"><code>eval(parse(text = app.c.chunks[[&quot;rs_rech_non_irr_1&quot;]]))</code></pre>
 </div>
 </div>
-<div id="process-model" class="section level2">
-<h2>Process Model</h2>
-<p>The R script for processing the model (shown in code blocks below) is primarily based on embedded R code in Appendix D.</p>
-<div id="pre-process" class="section level3">
-<h3>Pre-process</h3>
-<p>Clear R objects from the current R environment and re-load modified datasets.</p>
-<pre class="r"><code>rm(list = ls())
-files &lt;- list.files(file.path(getwd(), &quot;data&quot;), pattern = &quot;*.rda$&quot;, full.names = TRUE)
-for (i in files) load(i)</code></pre>
-<p>Read Appendix D R-source-code file (“sir20165080_AppendixD.R”) and remove all lines composed of the <code>invisible(dev.off())</code> command. This command is only useful when copy/pasting directly from the R-source-code file.</p>
-<pre class="r"><code>file &lt;- system.file(&quot;doc&quot;, &quot;sir20165080_AppendixD.R&quot;, package = &quot;wrv&quot;)
-app.d.r &lt;- readLines(file)</code></pre>
-<p>Parse and evaluate all previous commands up to writing model input files.</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----write_modflow_input&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))
-app.d.r &lt;- app.d.r[-(1:line)]
-line &lt;- grep(&quot;## ----&quot;, app.d.r)[1] - 1
-app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
-<p>Set a model name identifier and pathname to the model-run folder (“model”).</p>
-<pre class="r"><code>id &lt;- &quot;wrv_mfusg&quot;
-dir.run &lt;- file.path(getwd(), &quot;model&quot;)</code></pre>
-<p>Write model input files to the model-run folder.</p>
-<pre class="r"><code>WriteModflowInput(rs.model, rech, well, trib, misc, river, drain, id, dir.run,
-                  is.convertible = FALSE, tr.stress.periods = tr.stress.periods,
-                  ntime.steps = ntime.steps, verbose = FALSE)</code></pre>
-<div id="copy-calibrated-files" class="section level4">
-<h4>Copy calibrated files</h4>
-<p>Overwrite model input files with their calibrated values in the “archive” folder. These inlcude the reference data files (“model/*.ref”) containing conductivity and storage coefficient values, MODFLOW River file (“model/*.riv”), MODFLOW Drain file (“model/*.drn”), and MODFLOW Layor Property Flow file (“model/*.lpf”). And copy calibrated data for irrigation efficiency (“eff.csv”), canal seepage (“seep.csv”), and tributary underflow (“trib.csv”) to the model-run folder.</p>
-<pre class="r"><code>dir.archive &lt;- file.path(getwd(), &quot;archive&quot;)
-files &lt;- list.files(dir.archive, full.names = TRUE)
-files &lt;- files[grep(&quot;(\\.ref|\\.riv|\\.drn|\\.lpf|eff\\.csv|seep\\.csv|trib\\.csv)$&quot;, files)]
-file.copy(files, dir.run, overwrite = TRUE)</code></pre>
 </div>
-<div id="save-file-containing-r-objects." class="section level4">
-<h4>Save file containing R objects.</h4>
-<p>Write a few of the R objects to a single binary R-data file in the model-run folder (“model/model.rda”).</p>
-<pre class="r"><code>rs &lt;- subset(rs.model, c(&quot;lay1.top&quot;, sprintf(&quot;lay%s.bot&quot;, 1:3)))
-save(rs, misc, trib, tr.stress.periods, ss.stress.periods, reduction, d.in.mv.ave,
-     file = file.path(dir.run, &quot;model.rda&quot;))</code></pre>
+<div id="model-processing" class="section level2">
+<h2>Model Processing</h2>
+<p>Let’s start model processing with a clean R environment. Remove all objects created during the previous instructions and reload our modified datasets.</p>
+<pre class="r"><code>rm(list = ls()[ls() != &quot;app.d.chunks&quot;])
+files &lt;- list.files(&quot;data&quot;, pattern = &quot;*.rda$&quot;, full.names = TRUE)
+lapply(files, load, envir = .GlobalEnv)</code></pre>
+<div id="copy-calibrated-files" class="section level3">
+<h3>Copy calibrated files</h3>
+<p>Copy all the <a href="calib-model.html">calibrated model</a> files from the “archive” folder to a new folder named “model” in our working directory.</p>
+<pre class="r"><code>dir.create(&quot;model&quot;, showWarnings = FALSE)
+files &lt;- list.files(&quot;archive&quot;, full.names = TRUE)
+file.copy(files, &quot;model&quot;, overwrite = TRUE)</code></pre>
+<p>Specify the identifier for the model run.</p>
+<pre class="r"><code>id &lt;- &quot;wrv_mfusg&quot;</code></pre>
+<p>Load R objects from the “model/model.rda” file into your R environment, these objects include <code>d.in.mv.ave</code>, <code>misc</code>, <code>reduction</code>, <code>rs</code>, <code>ss.stress.periods</code>, <code>tr.stress.periods</code>, and <code>trib</code>. A description of each R object is given in the help documentation of the <code>UpdateWaterBudget</code> function in the <strong>wrv</strong> package.</p>
+<pre class="r"><code>load(&quot;model/model.rda&quot;)</code></pre>
+<p>The <code>rs</code> object in the appendix D code is named “rs.model”; use the following command to address this issue:</p>
+<pre class="r"><code>rs.model &lt;- rs</code></pre>
 </div>
-<div id="run-water-budget-calculation" class="section level4">
-<h4>Run water budget calculation</h4>
-<p>Run the water-budget calculation and specify function arguments using modified datasets.</p>
-<pre class="r"><code>UpdateWaterBudget(dir.run, id, qa.tables = &quot;english&quot;, pod.wells = pod.wells,
-                  comb.sw.irr = comb.sw.irr, et = et, pod.gw = pod.gw,
-                  entity.components = entity.components,
-                  rs.entities = rs.entities)</code></pre>
-</div>
+<div id="run-water-balance-model" class="section level3">
+<h3>Run water-balance model</h3>
+<p>Rerun the water-balance model using our <a href="scenario2.html#create_datasets">modified datasets</a>—this results in a new MODFLOW Well file (“model/_mfusg.wel“) and quality assurance tables (”model/qa-*.csv“). Note that all modified datasets need to be passed as arguments in the <code>UpdateWaterBudget</code> function.</p>
+<pre class="r"><code>UpdateWaterBudget(&quot;model&quot;, id, qa.tables = &quot;english&quot;, pod.wells = pod.wells,
+                  comb.sw.irr = comb.sw.irr, et = et,  pod.gw = pod.gw,
+                  entity.components = entity.components, rs.entities = rs.entities)</code></pre>
 </div>
 <div id="run-modflow" class="section level3">
 <h3>Run MODFLOW</h3>
-<p>Run the modified-model simulation.</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----read_budget&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))</code></pre>
-<p>and remove the evaluated commands.</p>
-<pre class="r"><code>app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
+<p>Run <a href="http://water.usgs.gov/ogw/mfusg/">MODFLOW-USG</a> using Scenario 2 conditions.</p>
+<pre class="r"><code>wd &lt;- setwd(&quot;model&quot;)
+system2(file.path(getwd(), &quot;RunModflow.bat&quot;), stdout = FALSE, stderr = FALSE)
+setwd(wd)</code></pre>
 </div>
-<div id="post-process" class="section level3">
-<h3>Post-process</h3>
-<p>Both the modified and archived model simulations are included the post-processing instructions.</p>
-<div id="read-water-budget-for-archived-simulation" class="section level4">
-<h4>Read water budget for archived simulation</h4>
-<p>Read water budget output for archived simulation, located in “archive” folder, and save results.</p>
-<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;archive&quot;)
-line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))
-d.river.arch   &lt;- d.river
-d.drain.1.arch &lt;- d.drain.1
-d.drain.2.arch &lt;- d.drain.2
-d.rech.arch    &lt;- d.rech
-d.well.arch    &lt;- d.well
-d.trib.arch    &lt;- d.trib</code></pre>
+<div id="read-water-budgets" class="section level3">
+<h3>Read water budgets</h3>
+<p>Read water-budget output for the archived calibrated simulation, located in the “archive” folder, and save the results for later use. To do so, run (parse and evaluate) the code chunks named “read_budget_1” and “read_budget_2” in Appendix D using the following commands:</p>
+<pre class="r"><code>dir.run &lt;- &quot;archive&quot;
+eval(parse(text = unlist(app.d.chunks[paste0(&quot;read_budget_&quot;, 1:2)])))</code></pre>
+<p>And save the average volumetric flow rates to an R object named “budget1” using</p>
+<pre class="r"><code>budget1 &lt;- c(&quot;Water-table recharge&quot;             = mean(d.rech$flow.in),
+             &quot;Streamflow losses&quot;                = mean(d.river$flow.in),
+             &quot;Tributary basin underflow&quot;        = mean(d.trib$flow),
+             &quot;Water-table discharge&quot;            = mean(d.rech$flow.out),
+             &quot;Streamflow gains&quot;                 = mean(d.river$flow.out),
+             &quot;Production well pumping&quot;          = mean(d.well$flow),
+             &quot;Stanton Crossing outlet boundary&quot; = mean(d.drain.1$flow),
+             &quot;Silver Creek outlet boundary&quot;     = mean(d.drain.2$flow))
+budget1 &lt;- setNames(as.integer(abs(budget1)) * 0.296106669, names(budget1))</code></pre>
+<p>Next, read the water-budget output for the Scenario 2 simulation, located in the “model” folder.</p>
+<pre class="r"><code>dir.run &lt;- &quot;model&quot;
+eval(parse(text = unlist(app.d.chunks[paste0(&quot;read_budget_&quot;, 1:2)])))</code></pre>
+<p>And save the average volumetric flow rates to an R object named “budget2” using</p>
+<pre class="r"><code>budget2 &lt;- c(&quot;Water-table recharge&quot;             = mean(d.rech$flow.in),
+             &quot;Streamflow losses&quot;                = mean(d.river$flow.in),
+             &quot;Tributary basin underflow&quot;        = mean(d.trib$flow),
+             &quot;Water-table discharge&quot;            = mean(d.rech$flow.out),
+             &quot;Streamflow gains&quot;                 = mean(d.river$flow.out),
+             &quot;Production well pumping&quot;          = mean(d.well$flow),
+             &quot;Stanton Crossing outlet boundary&quot; = mean(d.drain.1$flow),
+             &quot;Silver Creek outlet boundary&quot;     = mean(d.drain.2$flow))
+budget2 &lt;- setNames(as.integer(abs(budget2)) * 0.296106669, names(budget2))</code></pre>
 </div>
-<div id="read-water-budget-for-modified-simulation" class="section level4">
-<h4>Read water budget for modified simulation</h4>
-<p>Read water budget output for modified simulation, located in “model” folder, and summarize results in the following figure.</p>
-<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
-app.d.r &lt;- app.d.r[-grep(&quot;invisible.*dev.off&quot;, app.d.r)]
-line &lt;- grep(&quot;## ----table_budget&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))</code></pre>
-<p><img src="figures/graph_water_budget-1.png" width="716" style="display: block; margin: auto;" /></p>
-<p><strong>Figure:</strong> Volumetric water budget components by year, including annual change in storage, for the entire simulation period, 1995–2010, south-central Idaho—based on the Scenario 2 model results.</p>
-</div>
-<div id="compare-water-budgets" class="section level4">
-<h4>Compare water budgets</h4>
-<p>A comparison between archived and modified water budgets is shown in the following table.</p>
+<div id="compare-water-budgets" class="section level3">
+<h3>Compare water budgets</h3>
+<p>A comparison between water budgets is made by constructing the following table.</p>
 <p><strong>Table:</strong> Water budgets for modified and archived simulation, specified as volumetric flow rates average over 1998–2010. [<strong>Inflow:</strong> water entering the aquifer system. <strong>Outflow:</strong> water leaving the aquifer system. <strong>Component:</strong> a water budget component in the groundwater-flow model. <strong>Archived Rate:</strong> is the mean volumetric flow rate for the archived simulation. <strong>Modified Rate</strong>: is the mean volumetric flow rate for the modified simulation. <strong>Difference:</strong> is the archived rate subtracted from the modified rate. <strong>Abbreviations:</strong> acre-ft/yr, acre-feet per year]</p>
+<pre class="r"><code>d &lt;- data.frame(rate1 = budget1, rate2 = budget2)
+d$direction &lt;- c(&quot;**Inflow**&quot;, &quot;&quot;, &quot;&quot;, &quot;**Outflow**&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;)
+d$component &lt;- names(budget1)
+d$diff &lt;- budget2 - budget1
+d$pchange &lt;- ((budget2 - budget1) / budget1) * 100
+d &lt;- rbind(d[1:3, ], NA, d[4:8, ], NA, NA)
+d$component[nrow(d)] &lt;- &quot;**Inflow - Outflow**&quot;
+d$rate1[nrow(d)] &lt;- sum(budget1[1:3]) - sum(budget1[5:8])
+d$rate2[nrow(d)] &lt;- sum(budget2[1:3]) - sum(budget2[5:8])
+rownames(d) &lt;- NULL
+d &lt;- d[, c(&quot;direction&quot;, &quot;component&quot;, &quot;rate1&quot;, &quot;rate2&quot;, &quot;diff&quot;, &quot;pchange&quot;)]
+colnames(d) &lt;- c(&quot;&quot;, &quot;Component&quot;, &quot;Archived rate&lt;br&gt;(acre-ft/yr)&quot;,
+                 &quot;Scenario rate&lt;br&gt;(acre-ft/yr)&quot;, &quot;Difference&lt;br&gt;(arce-ft/yr)&quot;,
+                 &quot;Percent&lt;br&gt;change&quot;)
+d[, 3] &lt;- formatC(d[, 3], format = &quot;f&quot;, digits = 0, big.mark = &quot;,&quot;)
+d[, 4] &lt;- formatC(d[, 4], format = &quot;f&quot;, digits = 0, big.mark = &quot;,&quot;)
+d[, 5] &lt;- formatC(d[, 5], format = &quot;f&quot;, digits = 0, big.mark = &quot;,&quot;)
+d[, 6] &lt;- formatC(d[, 6], format = &quot;f&quot;, digits = 1, big.mark = &quot;,&quot;)
+d[, 1:2][is.na(d[, 1:2])]  &lt;- &quot;&quot;
+d[, 3:6][d[, 3:6] == &quot;NA&quot;] &lt;- &quot;&quot;
+knitr::kable(d, format = &quot;markdown&quot;, padding = 0, booktabs = TRUE, digits = 0,
+             row.names = FALSE, col.names = colnames(d), align = &quot;llrrrr&quot;)</code></pre>
 <table style="width:100%;">
 <colgroup>
-<col width="13%" />
+<col width="7%" />
+<col width="21%" />
+<col width="20%" />
 <col width="20%" />
 <col width="18%" />
-<col width="18%" />
-<col width="16%" />
-<col width="11%" />
+<col width="12%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left"></th>
 <th align="left">Component</th>
 <th align="right">Archived rate<br>(acre-ft/yr)</th>
-<th align="right">Modified rate<br>(acre-ft/yr)</th>
+<th align="right">Scenario rate<br>(acre-ft/yr)</th>
 <th align="right">Difference<br>(arce-ft/yr)</th>
 <th align="right">Percent<br>change</th>
 </tr>
@@ -562,8 +544,8 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow losses</td>
 <td align="right">177,813</td>
-<td align="right">177,512</td>
-<td align="right">-301</td>
+<td align="right">177,511</td>
+<td align="right">-302</td>
 <td align="right">-0.2</td>
 </tr>
 <tr class="odd">
@@ -594,8 +576,8 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="left"></td>
 <td align="left">Streamflow gains</td>
 <td align="right">251,967</td>
-<td align="right">252,624</td>
-<td align="right">657</td>
+<td align="right">252,623</td>
+<td align="right">656</td>
 <td align="right">0.3</td>
 </tr>
 <tr class="odd">
@@ -631,46 +613,55 @@ eval(parse(text = app.d.r[1:line]))</code></pre>
 <td align="right"></td>
 </tr>
 <tr class="odd">
+<td align="left"></td>
 <td align="left"><strong>Inflow - Outflow</strong></td>
-<td align="left">Change in aquifer storage</td>
-<td align="right">604</td>
-<td align="right">581</td>
-<td align="right">-24</td>
-<td align="right">-3.9</td>
+<td align="right">29,312</td>
+<td align="right">29,289</td>
+<td align="right"></td>
+<td align="right"></td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="read-heads-for-archived-simulation" class="section level4">
-<h4>Read heads for archived simulation</h4>
+<div id="read-hydraulic-heads" class="section level3">
+<h3>Read hydraulic heads</h3>
 <p>Read simulated hydraulic heads for archived simulation, located in “archive” folder, and save results.</p>
-<pre class="r"><code>line &lt;- grep(&quot;## ----read_head&quot;, app.d.r) - 1
-app.d.r &lt;- app.d.r[-(1:line)]
-dir.run &lt;- file.path(getwd(), &quot;archive&quot;)
-line &lt;- grep(&quot;## ----map_head_exceedance&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))
-rs.wt.arch &lt;- rs.wt</code></pre>
+<p>Read the simulated hydraulic head (head) output for the archived calibrated model, located in the “archive” folder, and save the results for later use. To do so, run (parse and evaluate) the code chunk named “read_head” in Appendix D using the following commands:</p>
+<pre class="r"><code>dir.run &lt;- &quot;archive&quot;
+eval(parse(text = app.d.chunks[[&quot;read_head&quot;]]))</code></pre>
+<p>And save the simulated heads in model layer 1 on August 16, 2007 to an R object named “head1” using</p>
+<pre class="r"><code>head1 &lt;- rs.heads.lay1[[&quot;2007-08-16&quot;]]</code></pre>
+<p>Next, read the simulated head output for the Scenario 2 model, located in the “model” folder.</p>
+<pre class="r"><code>dir.run &lt;- &quot;model&quot;
+eval(parse(text = app.d.chunks[[&quot;read_head&quot;]]))</code></pre>
+<p>And save the simulated heads in model layer 1 on August 16, 2007 to an R object named “head2” using</p>
+<pre class="r"><code>head2 &lt;- rs.heads.lay1[[&quot;2007-08-16&quot;]]</code></pre>
 </div>
-<div id="read-heads-for-modified-simulation" class="section level4">
-<h4>Read heads for modified simulation</h4>
-<p>Read simulated water table for modified simulation, located in “model” folder.</p>
-<pre class="r"><code>dir.run &lt;- file.path(getwd(), &quot;model&quot;)
-line &lt;- grep(&quot;## ----map_head_exceedance&quot;, app.d.r)
-eval(parse(text = app.d.r[1:line]))
-# Warning in writeValues(out, v, tr$row[i]): Reached total allocation of 16366Mb: see
-# help(memory.size)
-
-# Warning in writeValues(out, v, tr$row[i]): Reached total allocation of 16366Mb: see
-# help(memory.size)
-line &lt;- grep(&quot;## ----map_wt_e&quot;, app.d.r)
-app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
-</div>
-<div id="compare-simulated-water-tables" class="section level4">
-<h4>Compare simulated water tables</h4>
-<p>A comparison between simulated water tables is shown in the following figure.</p>
+<div id="compare-head-distributions" class="section level3">
+<h3>Compare head distributions</h3>
+<p>A comparison between head distributions is made by constructing the following figure.</p>
 <p><strong>Figure:</strong> Simulated water table difference, defined as the archived water table subtracted from the modified water table, during August 2007.</p>
-<p><img src="figures/map_water_tbl_diff-1.png" width="716" style="display: block; margin: auto;" /></p>
-</div>
+<pre class="r"><code>r &lt;- head2 - head1
+r[] &lt;- r[] * 3.28084
+usr &lt;- c(2472304, 2497015, 1343284, 1358838)
+r &lt;- crop(r, extent(usr))
+zlim &lt;- range(pretty(range(r[], na.rm = TRUE)))
+ratio &lt;- abs(zlim[1]) / diff(zlim)
+Pal &lt;- function(...) {
+  Pal1 &lt;- colorRampPalette(c(&quot;#F02311&quot;, &quot;#F02311&quot;, &quot;#FFD0D4&quot;))
+  Pal2 &lt;- colorRampPalette(c(&quot;#FCFBE3&quot;, &quot;#67A9CF&quot;, &quot;#025D8C&quot;))
+  n1 &lt;- round(... * ratio)
+  n2 &lt;- ... - n1
+  return(c(Pal1(n1), Pal2(n2)))
+}
+explanation &lt;- &quot;Hydraulic head differnce, in feet&quot;
+PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim, bg.image = hill.shading,
+        bg.image.alpha = 0.6, pal = Pal, dms.tick = TRUE, max.dev.dim = c(43, 56),
+        rivers = list(x = streams.rivers), lakes = list(x = lakes),
+        explanation = explanation, credit = &quot;&quot;, contour.lines = list(col = &quot;#1F1F1F&quot;))
+legend(&quot;topright&quot;, &quot;Contour line&quot;, col=&quot;#1F1F1F&quot;, lty = 1, lwd = 0.5,
+       inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = &quot;#FFFFFFCD&quot;)</code></pre>
+<p><img src="figures/map_water_tbl_diff-1.png" width="716" /></p>
 </div>
 </div>
 
@@ -699,6 +690,7 @@ app.d.r &lt;- app.d.r[-(1:line)]</code></pre>
 $(document).ready(function () {
   $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
 });
+
 
 </script>
 

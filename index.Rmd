@@ -2,99 +2,110 @@
 title: "Overview"
 ---
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(eval=FALSE)
+```
+
 Over the course of this 1-day training class you will learn to run
 water use scenarios with the Wood River Valley (WRV) groundwater-flow model.
 
 ## Tentative Schedule
 
-* 8:00--9:15  Welcome and introductions (Jim Bartoling, USGS)
+| Time         | Description | Instructor |
+|:------------:| -------------------------------------------------------------------------------- | --------------- |
+| 8:00--8:15   | Welcome and introductions                                                        |                 |
+| 8:15--9:15   | Overview of WRV groundwater-flow-model publication, archive, and repository      | J. Fisher, USGS |
+| 9:15--9:35   | Break                                                                            |                 |
+| 9:30--10:30  | Introduction to the R-programming language                                       | J. Fisher, USGS |
+| 10:45--11:45 | Running and analysing the archived [calibrated model](calib-model.html)          | J. Fisher, USGS |
+| 11:45--12:45 | Lunch                                                                            |                 |
+| 12:45--1:30  | Running and analyzing the calibrated model                                       | J. Sukow, IDWR  |
+| 1:30--2:00   | Running scenarios using the fully populated model, overview of example scenarios | J. Sukow, IDWR  |
+| 2:00--2:15   | Break                                                                            |                 |
+| 2:15--3:00   | Scenario 1: an example simulation of managed recharge                            | J. Sukow, IDWR  |
+| 3:00--4:30   | [Scenario 2](scenario-2.html): an example simulation of idling irrigated lands   | J. Fisher, USGS |
 
-* **8:15--9:15** Overview of WRV groundwater-flow-model publication, archive, and repository (Jason Fisher, USGS)
+## Hardware
 
-* 9:15--9:35 Break
+Requires an internet connection and about 16 gigabytes of memory.
 
-* **9:30--10:30** Introduction to the R-programming language (Jason Fisher, USGS)
+## Software
 
-* **10:45--11:45** Running and analysing the archived [calibrated model](calib-model.html) (Jason Fisher, USGS)
+If [R](https://www.r-project.org/) (version 3.3 or greater) is not already installed on your computer,
+download and install the latest binary distribution from the
+**C**omprehensive **R** **A**rchive **N**etwork ([CRAN](https://cran.r-project.org/package=inlmisc)).
+Installation instructions for installing R are located at
+https://jfisher-usgs.github.io/r-workshop/software.html#r.
+R should be accessible from the start menu, desktop shortcut, or command shell.
+Assuming you installed R on a 64-bit operating system (OS), two versions of R are made available,
+that is, a 32-bit and 64-bit version.
+The 64-bit version of R (R x64) is preferred.
+An introduction to the R-programming language is provided at
+https://jfisher-usgs.github.io/r-workshop.
 
-* 11:45--12:45 Lunch
+Startup an R session.
+Extend the capabilities of R by installing the R-package **wrv**.
+You can install the stable version of **wrv** from the
+**G**eological Survey **R** **A**rchive **N**etwork ([GRAN](https://owi.usgs.gov/R/gran.html)),
+and its dependencies from CRAN,
+by pasting the following commands into your R console:
 
-* 12:45--1:30 Running and analyzing the calibrated model (Jennifer Sukow, IDWR)
+```{r}
+repos <- c(GRAN = "http://owi.usgs.gov/R", CRAN = "https://cloud.r-project.org/")
+update.packages(ask = FALSE, repos = repos)
+install.packages("wrv", repos = repos, dependencies = TRUE)
+```
 
-* 1:30--2:00 Running scenarios using the fully populated model, overview of example scenarios (Jennifer Sukow, IDWR)
+You will only need to install R packages once on your computer.
+To ensure that everything got installed properly,
+load the **wrv** package in your current R session using
 
-* 2:00--2:15 Break
-
-* 2:15--3:00 Scenario 1: an example simulation of managed recharge (Jennifer Sukow, IDWR)
-
-* **3:00--4:30** [Scenario 2](scenario-2.html): an example simulation of idling irrigated lands (Jason Fisher, USGS)
+```{r}
+library("wrv")
+```
 
 ## Files
 
 The groundwater-flow model is described in the associated
 [model report](http://dx.doi.org/10.3133/sir20165080 "USGS Scientific Investigations Report") and
 [model archive](http://dx.doi.org/10.5066/F7C827DT "USGS Data Release").
-
-The processing programs and unprocessed data sets for the groundwater-flow model
-are bundled together in an R package named **wrv**.
-The file repository for this package is located at https://github.com/USGS-R/wrv.
+Processing programs and unprocessed data sets for the model are bundled together in an R package named **wrv**---the
+file repository for this package is located on [GitHub](https://github.com/USGS-R/wrv).
 Included in the **wrv** package is [MODFLOW-USG](http://water.usgs.gov/ogw/mfusg/ "MODFLOW-USG") version 1.2,
 a U.S. Geological Survey (USGS) computer code that solves the groundwater-flow equation.
 
-Files used in this training class are available on a
+Files used in this training class were placed online in the
 [wrv-training repository](https://github.com/jfisher-usgs/wrv-training).
-There will also be a USB-thumb drive distributed in class that contains the repository file and folder structure,
-and includes many other files that result from intermediate steps in data processing.
-These additional files will be helpful if your computer is unable to execute some of processing steps
-because of memory limitations or time constraints.
+Create a copy of the repository on your computer using R.
+To do so, first specify where you want to place the repository in your local file system.
+Type the following commands substituting in the desired path;
+for example, I changed the path from `"<path/to/repository>"` to `"I:/Software/wrv-training"`
+making sure to use the forward slash (/) to separate folder names:
 
-## Software
-
-Installation instructions for most of the software used in this class is located at
-https://jfisher-usgs.github.io/r-workshop/software.html.
-
-A *beta* version of the R-package **wrv** also needs to be installed from its binary distribution file,
-located on the USB drive ("wrv_1.0.3.zip").
-This version of the package will soon be made available from the
-**G**eological Survey **R** **A**rchive **N**etwork ([GRAN](https://owi.usgs.gov/R/gran.html)).
-The new package version does not change model output or analysis results.
-One major change is the removal of general-use functions from **wrv**.
-These removed functions were bundled together in a new R package called **inlmisc**, available on
-the **C**omprehensive **R** **A**rchive **N**etwork ([CRAN](https://cran.r-project.org/package=inlmisc)).
-
-First remove any previous version of the **wrv** package you may have installed
-by opening an R session and typing the following command:
-
-```{r wrv_pkg_rm, eval=FALSE}
-remove.packages("wrv")
+```{r}
+path <- "<path/to/repository>"
+dir.create(path, recursive = TRUE)
 ```
 
-To install the **inlmisc** package and its dependencies from CRAN use
+Next, copy the remote repository to your computer.
 
-```{r inlmisc_pkg_install, eval=FALSE}
-install.packages("inlmisc", repos = "https://cloud.r-project.org/", 
-                 dependencies = TRUE)
+```{r}
+git2r::clone("https://github.com/jfisher-usgs/wrv-training.git", path)
 ```
 
-And to install the beta version of the **wrv** package use
+All subsequent R instructions require that the *working directory* be set to the local wrv-training repository every time you start an R session.
+A working directory allows us to use relative paths instead of full absolute paths in our R scripts.
+An absolute path points to the same location in a file system, regardless of the current working directory.
+By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path.
+Use the `setwd` R function to set the working directory to the local wrv-training repository specified above.
 
-```{r wrv_pkg_install, eval=FALSE}
-install.packages(file.choose(), repos = NULL)
-
-install.packages(c("animation", "dataRetrieval", "git2r", "knitr", "RCurl", 
-                   "sfsmisc", "viridis", "xtable"), 
-                 repos = "https://cloud.r-project.org/")
+```{r}
+setwd(path)
 ```
-You will be prompted to choose the location of the local ZIP file "wrv_1.0.3.zip".
-
-## R programming
-
-An introduction to the R-programming language is provided at
-https://jfisher-usgs.github.io/r-workshop/index.html.
 
 ## Bugs
 
-Like any project, this website is a work in progress.
+This website is a work in progress.
 Please consider reporting bugs and asking for clarification on the
 [Issues page](https://github.com/jfisher-usgs/wrv-training/issues).
 Or you can just contact me via email at jfisher@usgs.gov

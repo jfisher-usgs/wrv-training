@@ -6,33 +6,30 @@ title: "Calibrated Model"
 knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 ```
 
-Running and analysing the archived calibrated model.
+These instructions describe how to run and analyze the archived calibrated model.
+
+Startup an R session.
+Set the working directory to the local wrv-training repository, that is the "wrv-training" folder,
+by typing the following command in your R console and making sure to change the file path to the correct location:
+
+```{r set_wd, eval=TRUE}
+setwd("I:/Software/wrv-training")
+```
+
+Load the **wrv**, [**inlmisc**](https://CRAN.R-project.org/package=inlmisc),
+and [**raster**](https://CRAN.R-project.org/package=raster) packages into your current R environment, using
+
+```{r load_wrv, message=FALSE, results="hide", eval=TRUE}
+lapply(c("wrv", "inlmisc", "raster"), library, character.only = TRUE)
+```
 
 ## Reconstitute Model Files
 
-These instructions describe how to reconstitute the file structure for a calibrated model run.
-
-Startup an R session.
-Set the working directory of R processes to the "wrv-training" folder.
-To do so, paste the following command in your R session and navigate to the "wrv-training" folder.
-
-```{r set_wd, eval=FALSE}
-setwd(choose.dir())
-```
-
-Load the **wrv**, **inlmisc**, and [**raster**](https://cran.r-project.org/package=raster)
-R packages in our current R environment.
-To do so, open an R session and use the following command.
-
-```{r load_wrv, message=FALSE, results="hide", eval=TRUE}
-library(wrv)
-library(inlmisc)
-library(raster)
-```
+Reconstitute the file and folder structure for a calibrated model run.
 
 ### Download model files
 
-Next, download model-input files for the calibrated model,
+Download model-input files for the calibrated model,
 archived on the USGS Water Resources [NSDI Node](http://dx.doi.org/10.5066/F7C827DT).
 Model-input files will be written to the "archive" folder in your working directory.
 
@@ -42,7 +39,7 @@ file <- file.path(tempdir(), basename(url))
 download.file(url, file)
 files <- unzip(file, exdir = tempdir())
 files <- files[basename(files) != "usgs.model.reference"]
-dir.create("archive", showWarnings=FALSE, recursive=TRUE)
+dir.create("archive", showWarnings = FALSE, recursive = TRUE)
 file.copy(files, "archive", overwrite = TRUE)
 ```
 
@@ -57,16 +54,40 @@ files <- unzip(file, exdir = tempdir())
 file.copy(files, "archive", overwrite = TRUE)
 ```
 
-Download the archived MODFLOW-USG executable (64-bit) file from the NSDI Node,
-and place it in the "archive" folder.
+Copy the MODFLOW-USG executable file from the **wrv** package to the "archive" folder---the
+executable will be compatible with your operating system.
 
 ```{r download_exe_1, results="hide"}
-url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/bin.zip"
-file <- file.path(tempdir(), basename(url))
-download.file(url, file)
-files <- unzip(file, exdir = tempdir())
-file.copy(files[grep("\\.exe$", files)], "archive", overwrite = TRUE)
+file.name <- ifelse(.Platform$OS.type == "windows", "mfusg.exe", "mfusg")
+arch <- ifelse(Sys.getenv("R_ARCH") == "/x64", "x64", "i386")
+file <- file.path(system.file("bin", arch, package = "wrv"), file.name)
+file.copy(file, "archive", overwrite = TRUE)
 ```
+
+### Run water-balance model
+
+There are four files used in the water-balance calculation that reside in the "archive" folder.
+The "eff.csv", "seep.csv", and "trib.csv" files contain optimized values of
+irrigation efficiency, canal seepage, and tributary underflow, respectively.
+And the "model.rda" file contains R objects `d.in.mv.ave`, `misc`, `reduction`, `rs`,
+`ss.stress.periods`, `tr.stress.periods`, and `trib`.
+A description of each R object is given in the help documentation of the
+`UpdateWaterBudget` function in the **wrv** package.
+
+```{r, eval=FALSE}
+help("UpdateWaterBudget", package = "wrv")
+```
+
+At some future date all four water-balance model input files will be added to the model archive.
+
+You can run the water-balance model and write quality assurance tables to disk ("archive/qa-\*.csv");
+however, this step is unnecessary because the water-balance input files have not changed.
+
+```{r water_budget_1, results="hide"}
+UpdateWaterBudget("archive", "wrv_mfusg", qa.tables = "english")
+```
+
+The result of running the water-balance model is a new MODFLOW Well Package file ("archive/wrv_mfusg.wel").
 
 ### Batch file for running model
 
@@ -77,35 +98,17 @@ may be used to run the model from File Explorer.
 cat("mfusg \"wrv_mfusg.nam\"", file = "archive/RunModflow.bat")
 ```
 
-There are four files used in the water-budget calculation that already reside in the "archive" folder.
-The "eff.csv", "seep.csv", and "trib.csv" files contain optimized values of
-irrigation efficiency, canal seepage, and tributary underflow, respectively.
-The "model.rda" file contains R objects `d.in.mv.ave`, `misc`, `reduction`, `rs`,
-`ss.stress.periods`, `tr.stress.periods`, and `trib`.
-A description of each these objects is given in the help documentation of the
-`UpdateWaterBudget` function in the **wrv** package.
-At some future date all four water-budget input files will be added to the model archive.
-
-### Run water-budget calculation
-
-Run the water-budget calculation and specify to write out quality assurace tables ("archive/qa-\*.csv").
-The MODFLOW Well Package file will be re-written ("archive/wrv_mfusg.wel"), however,
-the file should not have changed because all the water-budget input files have not changed.
-
-```{r water_budget_1, results="hide"}
-UpdateWaterBudget("archive", "wrv_mfusg", qa.tables = "english")
-```
+You can double-click the batch file to run the model; however,
+this step is unnecessary because the model input files have not changed.
 
 ## Post-Process Model
 
 These instructions describe an example analysis of model output.
 
-Load R objects from a R-data file in the archive folder ("archive/model.rda")
-and list all objects in your R environment.
+Load R objects stored in the R-data file ("archive/model.rda") into your current R environment.
 
 ```{r model_rda_1, eval=TRUE}
 load("archive/model.rda")
-cat(ls(), sep = ", ")
 ```
 
 ### Calculate transmissivity
@@ -129,7 +132,7 @@ ReadReferenceFile <- function(file, mask.value = 1e+09) {
 }
 ```
 
-Put our new function to use and read in the calibrated hydraulic conductivity values.
+Put our new function to use by reading in the calibrated hydraulic conductivity values.
 Realize that the R object `rs` stores raster layers describing the geometry of the model grid.
 
 ```{r read_hk1_1, eval=TRUE}
@@ -150,7 +153,7 @@ Calculate the transmissivity of model layer 1.
 r <- (rs[["lay1.top"]] - rs[["lay1.bot"]]) * rs[["lay1.hk"]]
 ```
 
-Finally, construct a map of transmissivity in model layer 1
+Finally, draw a map of transmissivity in model layer 1.
 
 ```{r map_hk1, fig.width=7.01, fig.height=9.32, eval=TRUE}
 r[] <- log10(r[])
@@ -165,14 +168,14 @@ credit <- paste("Base derived from U.S. Geological Survey National",
                 "North American Datum of 1983.")
 explanation <- paste("Transmissivity, in square meters per day,",
                      "plotted on a logarithmic scale.")
-PlotMap(r, breaks = breaks, xlim = usr.map[1:2], ylim = usr.map[3:4], 
-        bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE, 
-        pal = Pal, explanation = explanation, 
+PlotMap(r, breaks = breaks, xlim = usr.map[1:2], ylim = usr.map[3:4],
+        bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE,
+        pal = Pal, explanation = explanation,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        labels = list(at = at, labels = labels), credit = credit, 
+        labels = list(at = at, labels = labels), credit = credit,
         contour.lines = list(col = "#1F1F1F"))
 plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
-text(cities, labels = cities@data$FEATURE_NA, col = "#333333", cex = 0.5, 
+text(cities, labels = cities@data$FEATURE_NA, col = "#333333", cex = 0.5,
      pos = 1, offset = 0.4)
 ```
 
@@ -182,7 +185,7 @@ Read simulated hydraulic heads for the calibrated model, located in "archive" fo
 
 ```{r head_1, eval=TRUE}
 heads <- ReadModflowBinary("archive/wrv_mfusg.hds")
-dates <- as.Date(vapply(heads, function(i) i$totim, 0), 
+dates <- as.Date(vapply(heads, function(i) i$totim, 0),
                  origin = tr.stress.periods[1])
 layer <- vapply(heads, function(i) i$ilay, 0L)
 FUN <- function(i) {return(setValues(raster(rs), i$d))}
@@ -195,7 +198,8 @@ names(rs.heads.lay2) <- raster.names
 names(rs.heads.lay3) <- raster.names
 ```
 
-Aggregate each wells spatial location, observed head, simulated head, and residual head data.
+Aggregate each wells spatial location, measured head, simulated head, and residual head data.
+This code chunk is a little complicated so don't feel bad if you can't follow along.
 
 ```{r head_2, eval=TRUE}
 well <- obs.wells
@@ -206,7 +210,7 @@ FUN <- function(i) {
   return(max(well.config[idxs, "lay"]))
 }
 well@data$lay <- vapply(unique(well.config$PESTNAME), FUN, 0L)
-head <- dplyr::left_join(head, well@data[, c("PESTNAME", "desc", "lay")], 
+head <- dplyr::left_join(head, well@data[, c("PESTNAME", "desc", "lay")],
                          by = "PESTNAME")
 head$Date <- as.Date(head$DateTime)
 head$head.obs <- head$Head
@@ -236,26 +240,26 @@ site.no <- "432650114144701"
 w <- well[well$SiteNo %in% site.no, ]
 rb <- get(paste0("rs.heads.lay", w@data$lay))
 ext <- t(extract(rb, coordinates(w)))
-head.sim <- data.frame(Date = as.Date(rownames(ext)), 
+head.sim <- data.frame(Date = as.Date(rownames(ext)),
                        head.sim = ext[, 1])
 head.obs <- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
-cat(with(w@data, sprintf("Well No. %s, USGS NWIS Site No. %s", 
+cat(with(w@data, sprintf("Well No. %s, USGS NWIS Site No. %s",
                          WELLNUMBER, SiteNo)))
 ```
 
-The location of the well is shown in the following figure.
+Draw the point location of the well site within the aquifer system.
 
 ```{r map_well, fig.width=7.01, fig.height=8.65, eval=TRUE}
-PlotMap(crs(hill.shading), xlim = usr.map[1:2], ylim = usr.map[3:4], 
-        bg.image = hill.shading, dms.tick = TRUE, bg.image.alpha = 0.6, 
-        rivers = list(x = streams.rivers), lakes = list(x = lakes), 
+PlotMap(crs(hill.shading), xlim = usr.map[1:2], ylim = usr.map[3:4],
+        bg.image = hill.shading, dms.tick = TRUE, bg.image.alpha = 0.6,
+        rivers = list(x = streams.rivers), lakes = list(x = lakes),
         credit = credit)
 plot(alluvium.extent, border = "#FFFFFFCC", col = NA, add = TRUE)
 plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
-text(cities, labels = cities@data$FEATURE_NA, col = "#333333", 
+text(cities, labels = cities@data$FEATURE_NA, col = "#333333",
      cex = 0.5, pos = 1, offset = 0.4)
-points(w, pch = 21, cex = 1.5, lwd = 0.5, col = NA, bg = "#F02311")
-text(w, labels = w@data$SiteNo, col = "#333333", cex = 0.8, 
+points(w, pch = 21, cex = 1.2, lwd = 0.5, col = NA, bg = "#F02311")
+text(w, labels = w@data$SiteNo, col = "#333333", cex = 0.7,
      pos = 4, offset = 0.4)
 ```
 
@@ -266,19 +270,19 @@ xlim <- range(head.sim$Date)
 ylim <- range(pretty(range(c(head.sim$head.sim, head.obs$head.obs))))
 cols <- c("#2A8FBDE5", "#A40802", "#FAFAD2")
 xbuf <- as.Date(c("1995-01-01", "1998-01-01"))
-bg.polygon <- list(x = xy.coords(c(xbuf, rev(xbuf)), c(rep(ylim[1], 2), rep(ylim[2], 2))), 
+bg.polygon <- list(x = xy.coords(c(xbuf, rev(xbuf)), c(rep(ylim[1], 2), rep(ylim[2], 2))),
                    col = cols[3])
 ylab <- paste("Hydraulic head in", c("meters", "feet"), "above the NAVD88")
 m.to.ft <- 3.280839895
 PlotGraph(head.sim, xlim = xlim, ylim = ylim, ylab = ylab, col = cols[2],
-          conversion.factor = m.to.ft, bg.polygon = bg.polygon, 
+          conversion.factor = m.to.ft, bg.polygon = bg.polygon,
           center.date.labels = TRUE)
 lines(x = as.Date(head.obs$DateTime), y = head.obs$head.obs,
       type = "b", pch = 20, lwd = 0.5, col = cols[1])
-labs <- c("Measured groundwater level", "Simulated groundwater level", 
+labs <- c("Measured groundwater level", "Simulated groundwater level",
           "Warm-up period in simulation")
-legend("topright", labs, pch = c(20, NA, 22), lwd = c(0.5, 1, NA), 
-       col = c(cols[1:2], "lightgray"), pt.bg = c(NA, NA, cols[3]), 
+legend("topright", labs, pch = c(20, NA, 22), lwd = c(0.5, 1, NA),
+       col = c(cols[1:2], "lightgray"), pt.bg = c(NA, NA, cols[3]),
        pt.lwd = c(NA, NA, 0.5), pt.cex = c(1, NA, 1.5), inset = 0.02,
        cex = 0.7, box.lty = 1, box.lwd = 0.5, xpd = NA, bg = "#FFFFFFCD")
 ```
