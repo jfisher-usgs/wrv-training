@@ -103,7 +103,7 @@ eval(parse(text = app.c.chunks[["setup"]]))
 Specify the folder in your working directory that contains the modified unprocessed-data files ("extdata") and
 place them in a temporary directory as uncompressed files using
 
-```{r init_extdata, message=FALSE}
+```{r init_extdata, message=FALSE, results="hide"}
 folder <- "extdata"
 files <- list.files(folder, full.names = TRUE, recursive = TRUE)
 dirs <- file.path(tempdir(), unique(dirname(files)))
@@ -276,7 +276,7 @@ located in the "archive" folder, and save the results for later use.
 To do so, run the code chunks named "read_budget_1" and "read_budget_2"
 in Appendix D using the following commands:
 
-```{r eval_budget_archive, message=FALSE, eval=TRUE}
+```{r eval_budget_archive, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "archive"
 eval(parse(text = unlist(app.d.chunks[paste0("read_budget_", 1:2)])))
 ```
@@ -297,7 +297,7 @@ budget1 <- setNames(as.integer(abs(budget1)) * 0.296106669, names(budget1))
 
 Next, read the water-budget output for the Scenario 2 simulation, located in the "model" folder.
 
-```{r eval_budget_scenario, message=FALSE, eval=TRUE}
+```{r eval_budget_scenario, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "model"
 eval(parse(text = unlist(app.d.chunks[paste0("read_budget_", 1:2)])))
 ```
