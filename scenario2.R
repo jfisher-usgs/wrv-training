@@ -34,7 +34,7 @@ print(chunk)
 ## ----eval_setup, message=FALSE-------------------------------------------
 eval(parse(text = app.c.chunks[["setup"]]))
 
-## ----init_extdata, message=FALSE-----------------------------------------
+## ----init_extdata, message=FALSE, results="hide"-------------------------
 folder <- "extdata"
 files <- list.files(folder, full.names = TRUE, recursive = TRUE)
 dirs <- file.path(tempdir(), unique(dirname(files)))
@@ -105,7 +105,7 @@ wd <- setwd("model")
 system2(file.path(getwd(), "RunModflow.bat"), stdout = FALSE, stderr = FALSE)
 setwd(wd)
 
-## ----eval_budget_archive, message=FALSE, eval=TRUE-----------------------
+## ----eval_budget_archive, message=FALSE, warning=FALSE, eval=TRUE--------
 dir.run <- "archive"
 eval(parse(text = unlist(app.d.chunks[paste0("read_budget_", 1:2)])))
 
@@ -120,7 +120,7 @@ budget1 <- c("Water-table recharge"             = mean(d.rech$flow.in),
              "Silver Creek outlet boundary"     = mean(d.drain.2$flow))
 budget1 <- setNames(as.integer(abs(budget1)) * 0.296106669, names(budget1))
 
-## ----eval_budget_scenario, message=FALSE, eval=TRUE----------------------
+## ----eval_budget_scenario, message=FALSE, warning=FALSE, eval=TRUE-------
 dir.run <- "model"
 eval(parse(text = unlist(app.d.chunks[paste0("read_budget_", 1:2)])))
 
