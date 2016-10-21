@@ -635,11 +635,6 @@ eval(parse(text = app.d.chunks[[&quot;read_head&quot;]]))</code></pre>
 <p>Next, read the simulated head output for the Scenario 2 model, located in the “model” folder.</p>
 <pre class="r"><code>dir.run &lt;- &quot;model&quot;
 eval(parse(text = app.d.chunks[[&quot;read_head&quot;]]))</code></pre>
-<pre><code># Warning in writeValues(out, v, tr$row[i]): Reached total allocation of
-# 16366Mb: see help(memory.size)
-
-# Warning in writeValues(out, v, tr$row[i]): Reached total allocation of
-# 16366Mb: see help(memory.size)</code></pre>
 <p>And save the simulated heads in model layer 1 on August 16, 2007 to an R object named “head2” using</p>
 <pre class="r"><code>head2 &lt;- rs.heads.lay1[[&quot;2007-08-16&quot;]]</code></pre>
 </div>

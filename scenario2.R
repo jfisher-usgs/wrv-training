@@ -159,14 +159,14 @@ d[, 3:6][d[, 3:6] == "NA"] <- ""
 knitr::kable(d, format = "markdown", padding = 0, booktabs = TRUE, digits = 0,
              row.names = FALSE, col.names = colnames(d), align = "llrrrr")
 
-## ----eval_head_archive, message=FALSE, eval=TRUE-------------------------
+## ----eval_head_archive, message=FALSE, warning=FALSE, eval=TRUE----------
 dir.run <- "archive"
 eval(parse(text = app.d.chunks[["read_head"]]))
 
 ## ----save_head_archive, eval=TRUE----------------------------------------
 head1 <- rs.heads.lay1[["2007-08-16"]]
 
-## ----eval_head_scenario, message=FALSE, eval=TRUE------------------------
+## ----eval_head_scenario, message=FALSE, warning=FALSE, eval=TRUE---------
 dir.run <- "model"
 eval(parse(text = app.d.chunks[["read_head"]]))
 
