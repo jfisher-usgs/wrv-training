@@ -362,7 +362,7 @@ Read the simulated hydraulic head (head) output for the archived calibrated mode
 located in the "archive" folder, and save the results for later use.
 To do so, run the code chunk named "read_head" in Appendix D using the following commands:
 
-```{r eval_head_archive, message=FALSE, eval=TRUE}
+```{r eval_head_archive, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "archive"
 eval(parse(text = app.d.chunks[["read_head"]]))
 ```
@@ -375,7 +375,7 @@ head1 <- rs.heads.lay1[["2007-08-16"]]
 
 Next, read the simulated head output for the Scenario 2 model, located in the "model" folder.
 
-```{r eval_head_scenario, message=FALSE, eval=TRUE}
+```{r eval_head_scenario, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "model"
 eval(parse(text = app.d.chunks[["read_head"]]))
 ```
