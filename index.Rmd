@@ -9,22 +9,6 @@ knitr::opts_chunk$set(eval=FALSE)
 Over the course of this 1-day training class you will learn to run
 water use scenarios with the Wood River Valley (WRV) groundwater-flow model.
 
-## Tentative Schedule
-
-| Time         | Description                                                                      | Instructor |
-|:------------:| -------------------------------------------------------------------------------- | ---------- |
-| 8:00--8:15   | Welcome and introductions                                                        |            |
-| 8:15--9:15   | Overview of WRV groundwater-flow-model publication, archive, and repository      | J. Fisher  |
-| 9:15--9:35   | Break                                                                            |            |
-| 9:30--10:30  | Introduction to the R-programming language                                       | J. Fisher  |
-| 10:45--11:45 | Running and analysing the archived [calibrated model](calib-model.html)          | J. Fisher  |
-| 11:45--12:45 | Lunch                                                                            |            |
-| 12:45--1:30  | Running and analyzing the calibrated model                                       | J. Sukow   |
-| 1:30--2:00   | Running scenarios using the fully populated model, overview of example scenarios | J. Sukow   |
-| 2:00--2:15   | Break                                                                            |            |
-| 2:15--3:00   | Scenario 1: an example simulation of managed recharge                            | J. Sukow   |
-| 3:00--4:30   | [Scenario 2](scenario-2.html): an example simulation of idling irrigated lands   | J. Fisher  |
-
 ## Hardware
 
 Requires an internet connection and about 16 gigabytes of memory.
@@ -33,7 +17,7 @@ Requires an internet connection and about 16 gigabytes of memory.
 
 If [R](https://www.r-project.org/) (version 3.3 or greater) is not already installed on your computer,
 download and install the latest binary distribution from the
-**C**omprehensive **R** **A**rchive **N**etwork ([CRAN](https://cran.r-project.org/package=inlmisc)).
+**C**omprehensive **R** **A**rchive **N**etwork ([CRAN](https://cloud.r-project.org/)).
 Installation instructions for installing R are located at
 https://jfisher-usgs.github.io/r-workshop/software.html#r.
 R should be accessible from the start menu, desktop shortcut, or command shell.
@@ -87,13 +71,13 @@ path <- "<path/to/repository>"
 dir.create(path, recursive = TRUE)
 ```
 
-Next, copy the remote repository to your computer.
+Next, copy the remote repository to your computer, using
 
 ```{r}
 git2r::clone("https://github.com/jfisher-usgs/wrv-training.git", path)
 ```
 
-All subsequent R instructions require that the *working directory* be set to the local wrv-training repository every time you start an R session.
+All subsequent R instructions require the *working directory* be set to the local wrv-training repository every time you start an R session.
 A working directory allows us to use relative paths instead of full absolute paths in our R scripts.
 An absolute path points to the same location in a file system, regardless of the current working directory.
 By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path.

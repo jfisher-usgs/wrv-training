@@ -7,8 +7,8 @@ navbar:
       href: index.html
     - text: "Calibrated Model"
       href: calib-model.html
-    - text: "Scenario 2"
-      href: scenario2.html
+    - text: "Scenario"
+      href: scenario.html
 
 output_dir: "."
 output:

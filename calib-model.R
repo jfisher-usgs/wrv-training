@@ -1,47 +1,27 @@
-## ---- include=FALSE------------------------------------------------------
+## ----set_options, include=FALSE------------------------------------------
 knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 
 ## ----set_wd, eval=TRUE---------------------------------------------------
 setwd("I:/Software/wrv-training")
 
-## ----load_wrv, message=FALSE, results="hide", eval=TRUE------------------
-lapply(c("wrv", "inlmisc", "raster"), library, character.only = TRUE)
+## ----load_pkgs, message=FALSE, results="hide", eval=TRUE-----------------
+lapply(c("wrv", "inlmisc", "raster", "leaflet"), library, character.only = TRUE)
 
-## ----downlaod_inputs_1, results="hide"-----------------------------------
+## ----downlaod_inputs, results="hide"-------------------------------------
 url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
 file <- file.path(tempdir(), basename(url))
 download.file(url, file)
 files <- unzip(file, exdir = tempdir())
 files <- files[basename(files) != "usgs.model.reference"]
-dir.create("archive", showWarnings = FALSE, recursive = TRUE)
 file.copy(files, "archive", overwrite = TRUE)
-
-## ----downlaod_outputs_1, results="hide"----------------------------------
-url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/output.zip"
-file <- file.path(tempdir(), basename(url))
-download.file(url, file)
-files <- unzip(file, exdir = tempdir())
-file.copy(files, "archive", overwrite = TRUE)
-
-## ----download_exe_1, results="hide"--------------------------------------
-file.name <- ifelse(.Platform$OS.type == "windows", "mfusg.exe", "mfusg")
-arch <- ifelse(Sys.getenv("R_ARCH") == "/x64", "x64", "i386")
-file <- file.path(system.file("bin", arch, package = "wrv"), file.name)
-file.copy(file, "archive", overwrite = TRUE)
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## help("UpdateWaterBudget", package = "wrv")
 
-## ----water_budget_1, results="hide"--------------------------------------
-UpdateWaterBudget("archive", "wrv_mfusg", qa.tables = "english")
-
-## ----model_run_bat_1, results="hide"-------------------------------------
-cat("mfusg \"wrv_mfusg.nam\"", file = "archive/RunModflow.bat")
-
-## ----model_rda_1, eval=TRUE----------------------------------------------
+## ----load_model_rda, eval=TRUE-------------------------------------------
 load("archive/model.rda")
 
-## ----ref_fun_1, eval=TRUE------------------------------------------------
+## ----define_ref_function, eval=TRUE--------------------------------------
 ReadReferenceFile <- function(file, mask.value = 1e+09) {
   x <- scan(file, quiet = TRUE)
   x[x == mask.value] <- NA
@@ -50,7 +30,7 @@ ReadReferenceFile <- function(file, mask.value = 1e+09) {
   return(r)
 }
 
-## ----read_hk1_1, eval=TRUE-----------------------------------------------
+## ----read_hk, eval=TRUE--------------------------------------------------
 r <- ReadReferenceFile("archive/hk1.ref")
 names(r) <- "lay1.hk"
 rs <- stack(rs, r)
@@ -61,13 +41,13 @@ r <- ReadReferenceFile("archive/hk3.ref")
 names(r) <- "lay3.hk"
 rs <- stack(rs, r)
 
-## ----tran_1, eval=TRUE---------------------------------------------------
+## ----calc_tran_lay1, eval=TRUE-------------------------------------------
 r <- (rs[["lay1.top"]] - rs[["lay1.bot"]]) * rs[["lay1.hk"]]
 
 ## ----map_hk1, fig.width=7.01, fig.height=9.32, eval=TRUE-----------------
 r[] <- log10(r[])
 Pal <- colorRampPalette(c("#F02311", "#FFFFEA", "#107FC9"))
-usr.map <- c(2451504, 2497815, 1342484, 1402354)
+usr <- c(2451504, 2497815, 1342484, 1402354)
 breaks <- pretty(r[], n = 15, na.rm = TRUE)
 at <- breaks[c(TRUE, FALSE)]
 labels <- ToScientific(10^at, digits = 1, lab.type = "plotmath")
@@ -77,7 +57,7 @@ credit <- paste("Base derived from U.S. Geological Survey National",
                 "North American Datum of 1983.")
 explanation <- paste("Transmissivity, in square meters per day,",
                      "plotted on a logarithmic scale.")
-PlotMap(r, breaks = breaks, xlim = usr.map[1:2], ylim = usr.map[3:4],
+PlotMap(r, breaks = breaks, xlim = usr[1:2], ylim = usr[3:4],
         bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE,
         pal = Pal, explanation = explanation,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
@@ -87,7 +67,24 @@ plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
 text(cities, labels = cities@data$FEATURE_NA, col = "#333333", cex = 0.5,
      pos = 1, offset = 0.4)
 
-## ----head_1, eval=TRUE---------------------------------------------------
+## ----update_water_budget, results="hide"---------------------------------
+UpdateWaterBudget("archive", "wrv_mfusg", qa.tables = "english")
+
+## ----copy_exe, results="hide"--------------------------------------------
+file.name <- ifelse(.Platform$OS.type == "windows", "mfusg.exe", "mfusg")
+arch <- ifelse(Sys.getenv("R_ARCH") == "/x64", "x64", "i386")
+file <- file.path(system.file("bin", arch, package = "wrv"), file.name)
+file.copy(file, "archive", overwrite = TRUE)
+
+## ----create_batch_file, results="hide"-----------------------------------
+cat("mfusg \"wrv_mfusg.nam\"", file = "archive/RunModflow.bat")
+
+## ----run_modflow---------------------------------------------------------
+wd <- setwd("archive")
+system2(file.path(getwd(), "RunModflow.bat"), stdout = FALSE, stderr = FALSE)
+setwd(wd)
+
+## ----read_heads, eval=TRUE-----------------------------------------------
 heads <- ReadModflowBinary("archive/wrv_mfusg.hds")
 dates <- as.Date(vapply(heads, function(i) i$totim, 0),
                  origin = tr.stress.periods[1])
@@ -101,7 +98,59 @@ names(rs.heads.lay1) <- raster.names
 names(rs.heads.lay2) <- raster.names
 names(rs.heads.lay3) <- raster.names
 
-## ----head_2, eval=TRUE---------------------------------------------------
+## ----print_dates, eval=FALSE---------------------------------------------
+## print(names(rs.heads.lay1))
+
+## ----get_head_snapshot, eval=TRUE----------------------------------------
+sim.date <- "2007-08-01"  # date format is YYYY-MM-DD
+rs.head <- stack(rs.heads.lay1[[sim.date]],
+                 rs.heads.lay2[[sim.date]],
+                 rs.heads.lay3[[sim.date]])
+names(rs.head) <- c("lay1.head", "lay2.head", "lay3.head")
+
+## ----define_transect, eval=TRUE------------------------------------------
+tran.ll <- rbind(c(-114.289069, 43.337289),
+                 c(-114.228996, 43.350930),
+                 c(-114.188843, 43.383649))
+tran <- SpatialLines(list(Lines(list(Line(tran.ll)), ID = "Transect")),
+                     proj4string = CRS("+proj=longlat +datum=WGS84"))
+tran <- spTransform(tran, crs(hill.shading))
+
+## ----map_head, fig.width=7.17, fig.height=5.31, eval=TRUE----------------
+r <- rs.head[["lay1.head"]]
+usr <- c(2472304, 2497015, 1343284, 1358838)
+r <- crop(r, extent(usr))
+zlim <- range(pretty(range(r[], na.rm = TRUE)))
+PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim,
+        bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE,
+        max.dev.dim = c(43, 56), credit = credit,
+        rivers = list(x = streams.rivers), lakes = list(x = lakes),
+        contour.lines = list(col = "#1F1F1F"),
+        explanation = "Hydraulic head, in meters above the NAVD 88")
+lines(tran, col = "#F02311")
+xy <- as(tran, "SpatialPoints")
+text(xy[c(1, length(xy)), ], labels = c("B", "B'"), col = "#F02311",
+     cex = 0.7, pos = c(2, 4), offset = 0.1, font = 4)
+plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
+text(cities, labels = cities@data$FEATURE_NA, col = "#333333",
+     cex = 0.5, pos = 1, offset = 0.4)
+legend("topright", c("Water-table contour", "Line of cross section"),
+       col = c("#1F1F1F", "#F02311"), lty = 1, lwd = c(0.5, 1),
+       inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = "#FFFFFFCD")
+
+## ----cs_transect, fig.width=7.16, fig.height=4.42, eval=TRUE-------------
+PlotCrossSection(tran, stack(rs, rs.head),
+                 geo.lays = c("lay1.top", "lay1.bot", "lay2.bot", "lay3.bot"),
+                 val.lays = names(rs.head), wt.lay = "lay1.head", asp = 40,
+                 ylab="Elevation, in meters above the NAVD 88",
+                 explanation="Hydraulic head, in meters above the NAVD 88.",
+                 contour.lines = list(col = "#1F1F1F"), draw.sep = FALSE,
+                 unit = "METERS", id = c("B", "B'"), wt.col = "#3B80F4")
+legend("bottomleft", c("Head contour", "Water table"),
+       col = c("#1F1F1F", "#3B80F4"), lty = c(1, 1), lwd = c(0.5, 1),
+       inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = "#FFFFFFCD")
+
+## ----aggregate_head_data, eval=TRUE--------------------------------------
 well <- obs.wells
 head <- obs.wells.head
 well.config <- GetWellConfig(rs, well, "PESTNAME")
@@ -124,33 +173,32 @@ FUN <- function(i) {
 }
 head$head.sim <- vapply(seq_len(nrow(head)), FUN, 0)
 head$head.res <- head$head.obs - head$head.sim
-x <- aggregate(head[, c("head.obs", "head.sim", "head.res")],
+d <- aggregate(head[, c("head.obs", "head.sim", "head.res")],
                by = list(PESTNAME = head$PESTNAME), mean)
-well@data <- dplyr::left_join(well@data, x, by = "PESTNAME")
+well@data <- dplyr::left_join(well@data, d, by = "PESTNAME")
 
-## ----head_3, eval=TRUE---------------------------------------------------
+## ----extract_well_data, eval=TRUE----------------------------------------
 site.no <- "432650114144701"
 w <- well[well$SiteNo %in% site.no, ]
 rb <- get(paste0("rs.heads.lay", w@data$lay))
 ext <- t(extract(rb, coordinates(w)))
-head.sim <- data.frame(Date = as.Date(rownames(ext)),
-                       head.sim = ext[, 1])
+head.sim <- data.frame(Date = as.Date(rownames(ext)), head.sim = ext[, 1])
 head.obs <- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
-cat(with(w@data, sprintf("Well No. %s, USGS NWIS Site No. %s",
-                         WELLNUMBER, SiteNo)))
+site.label <- paste("USGS NWIS Site No.", w@data$SiteNo)
+print(site.label)
 
-## ----map_well, fig.width=7.01, fig.height=8.65, eval=TRUE----------------
-PlotMap(crs(hill.shading), xlim = usr.map[1:2], ylim = usr.map[3:4],
-        bg.image = hill.shading, dms.tick = TRUE, bg.image.alpha = 0.6,
-        rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        credit = credit)
-plot(alluvium.extent, border = "#FFFFFFCC", col = NA, add = TRUE)
-plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
-text(cities, labels = cities@data$FEATURE_NA, col = "#333333",
-     cex = 0.5, pos = 1, offset = 0.4)
-points(w, pch = 21, cex = 1.2, lwd = 0.5, col = NA, bg = "#F02311")
-text(w, labels = w@data$SiteNo, col = "#333333", cex = 0.7,
-     pos = 4, offset = 0.4)
+## ----leaflet_map, fig.width=5.00, fig.height=5.00, eval=TRUE-------------
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+crs <- CRS("+init=epsg:4326")
+ll  <- coordinates(spTransform(w, crs))
+map <- leaflet()
+map <- setView(map, lng = ll[1], lat = ll[2], zoom = 14)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addPolygons(map, data = spTransform(alluvium.extent, crs),
+                   color = "#FFFFFF", opacity = 0.7, fillOpacity = 0.1)
+map <- addMarkers(map, lng = ll[1], lat = ll[2], popup = site.label)
+map
 
 ## ----graph_head, fig.width=7.16, fig.height=3.50, eval=TRUE--------------
 xlim <- range(head.sim$Date)

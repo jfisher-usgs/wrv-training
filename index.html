@@ -289,7 +289,7 @@ div.tocify {
   <a href="calib-model.html">Calibrated Model</a>
 </li>
 <li>
-  <a href="scenario2.html">Scenario 2</a>
+  <a href="scenario.html">Scenario</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -309,87 +309,13 @@ div.tocify {
 
 
 <p>Over the course of this 1-day training class you will learn to run water use scenarios with the Wood River Valley (WRV) groundwater-flow model.</p>
-<div id="tentative-schedule" class="section level2">
-<h2>Tentative Schedule</h2>
-<table>
-<colgroup>
-<col width="14%" />
-<col width="75%" />
-<col width="10%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Time</th>
-<th>Description</th>
-<th>Instructor</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">8:00–8:15</td>
-<td>Welcome and introductions</td>
-<td></td>
-</tr>
-<tr class="even">
-<td align="center">8:15–9:15</td>
-<td>Overview of WRV groundwater-flow-model publication, archive, and repository</td>
-<td>J. Fisher</td>
-</tr>
-<tr class="odd">
-<td align="center">9:15–9:35</td>
-<td>Break</td>
-<td></td>
-</tr>
-<tr class="even">
-<td align="center">9:30–10:30</td>
-<td>Introduction to the R-programming language</td>
-<td>J. Fisher</td>
-</tr>
-<tr class="odd">
-<td align="center">10:45–11:45</td>
-<td>Running and analysing the archived <a href="calib-model.html">calibrated model</a></td>
-<td>J. Fisher</td>
-</tr>
-<tr class="even">
-<td align="center">11:45–12:45</td>
-<td>Lunch</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td align="center">12:45–1:30</td>
-<td>Running and analyzing the calibrated model</td>
-<td>J. Sukow</td>
-</tr>
-<tr class="even">
-<td align="center">1:30–2:00</td>
-<td>Running scenarios using the fully populated model, overview of example scenarios</td>
-<td>J. Sukow</td>
-</tr>
-<tr class="odd">
-<td align="center">2:00–2:15</td>
-<td>Break</td>
-<td></td>
-</tr>
-<tr class="even">
-<td align="center">2:15–3:00</td>
-<td>Scenario 1: an example simulation of managed recharge</td>
-<td>J. Sukow</td>
-</tr>
-<tr class="odd">
-<td align="center">3:00–4:30</td>
-<td><a href="scenario-2.html">Scenario 2</a>: an example simulation of idling irrigated lands</td>
-<td>J. Fisher</td>
-</tr>
-</tbody>
-</table>
-</div>
 <div id="hardware" class="section level2">
 <h2>Hardware</h2>
 <p>Requires an internet connection and about 16 gigabytes of memory.</p>
 </div>
 <div id="software" class="section level2">
 <h2>Software</h2>
-<p>If <a href="https://www.r-project.org/">R</a> (version 3.3 or greater) is not already installed on your computer, download and install the latest binary distribution from the <strong>C</strong>omprehensive <strong>R</strong> <strong>A</strong>rchive <strong>N</strong>etwork (<a href="https://cran.r-project.org/package=inlmisc">CRAN</a>). Installation instructions for installing R are located at <a href="https://jfisher-usgs.github.io/r-workshop/software.html#r" class="uri">https://jfisher-usgs.github.io/r-workshop/software.html#r</a>. R should be accessible from the start menu, desktop shortcut, or command shell. Assuming you installed R on a 64-bit operating system (OS), two versions of R are made available, that is, a 32-bit and 64-bit version. The 64-bit version of R (R x64) is preferred. An introduction to the R-programming language is provided at <a href="https://jfisher-usgs.github.io/r-workshop" class="uri">https://jfisher-usgs.github.io/r-workshop</a>.</p>
+<p>If <a href="https://www.r-project.org/">R</a> (version 3.3 or greater) is not already installed on your computer, download and install the latest binary distribution from the <strong>C</strong>omprehensive <strong>R</strong> <strong>A</strong>rchive <strong>N</strong>etwork (<a href="https://cloud.r-project.org/">CRAN</a>). Installation instructions for installing R are located at <a href="https://jfisher-usgs.github.io/r-workshop/software.html#r" class="uri">https://jfisher-usgs.github.io/r-workshop/software.html#r</a>. R should be accessible from the start menu, desktop shortcut, or command shell. Assuming you installed R on a 64-bit operating system (OS), two versions of R are made available, that is, a 32-bit and 64-bit version. The 64-bit version of R (R x64) is preferred. An introduction to the R-programming language is provided at <a href="https://jfisher-usgs.github.io/r-workshop" class="uri">https://jfisher-usgs.github.io/r-workshop</a>.</p>
 <p>Startup an R session. Extend the capabilities of R by installing the R-package <strong>wrv</strong>. You can install the stable version of <strong>wrv</strong> from the <strong>G</strong>eological Survey <strong>R</strong> <strong>A</strong>rchive <strong>N</strong>etwork (<a href="https://owi.usgs.gov/R/gran.html">GRAN</a>), and its dependencies from CRAN, by pasting the following commands into your R console:</p>
 <pre class="r"><code>repos &lt;- c(GRAN = &quot;http://owi.usgs.gov/R&quot;, CRAN = &quot;https://cloud.r-project.org/&quot;)
 update.packages(ask = FALSE, repos = repos)
@@ -403,9 +329,9 @@ install.packages(&quot;wrv&quot;, repos = repos, dependencies = TRUE)</code></pr
 <p>Files used in this training class were placed online in the <a href="https://github.com/jfisher-usgs/wrv-training">wrv-training repository</a>. Create a copy of the repository on your computer using R. To do so, first specify where you want to place the repository in your local file system. Type the following commands substituting in the desired path; for example, I changed the path from <code>&quot;&lt;path/to/repository&gt;&quot;</code> to <code>&quot;I:/Software/wrv-training&quot;</code> making sure to use the forward slash (/) to separate folder names:</p>
 <pre class="r"><code>path &lt;- &quot;&lt;path/to/repository&gt;&quot;
 dir.create(path, recursive = TRUE)</code></pre>
-<p>Next, copy the remote repository to your computer.</p>
+<p>Next, copy the remote repository to your computer, using</p>
 <pre class="r"><code>git2r::clone(&quot;https://github.com/jfisher-usgs/wrv-training.git&quot;, path)</code></pre>
-<p>All subsequent R instructions require that the <em>working directory</em> be set to the local wrv-training repository every time you start an R session. A working directory allows us to use relative paths instead of full absolute paths in our R scripts. An absolute path points to the same location in a file system, regardless of the current working directory. By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path. Use the <code>setwd</code> R function to set the working directory to the local wrv-training repository specified above.</p>
+<p>All subsequent R instructions require the <em>working directory</em> be set to the local wrv-training repository every time you start an R session. A working directory allows us to use relative paths instead of full absolute paths in our R scripts. An absolute path points to the same location in a file system, regardless of the current working directory. By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path. Use the <code>setwd</code> R function to set the working directory to the local wrv-training repository specified above.</p>
 <pre class="r"><code>setwd(path)</code></pre>
 </div>
 <div id="bugs" class="section level2">
