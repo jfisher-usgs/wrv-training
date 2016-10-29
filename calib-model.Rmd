@@ -3,7 +3,7 @@ title: "Calibrated Model"
 ---
 
 ```{r set_options, include=FALSE}
-knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
+knitr::opts_chunk$set(eval=FALSE, dpi=100, fig.path="figures/")
 ```
 
 These instructions describe how to run and analyze the archived calibrated model.
@@ -21,7 +21,8 @@ Load the **wrv**, [**inlmisc**](https://CRAN.R-project.org/package=inlmisc),
 [**leaflet**](https://CRAN.R-project.org/package=leaflet) packages into your current R environment, using
 
 ```{r load_pkgs, message=FALSE, results="hide", eval=TRUE}
-lapply(c("wrv", "inlmisc", "raster", "leaflet"), library, character.only = TRUE)
+packages <- c("wrv", "inlmisc", "raster", "leaflet")
+lapply(packages, library, character.only = TRUE)
 ```
 
 ## Get Model Input Files
@@ -299,40 +300,45 @@ d <- aggregate(head[, c("head.obs", "head.sim", "head.res")],
 well@data <- dplyr::left_join(well@data, d, by = "PESTNAME")
 ```
 
-Choose a single well from the `r nrow(well@data)` wells in the aquifer system.
+Choose a single well from the groundwater observation network.
 We selected a well based on its USGS NWIS site number (`SiteNo`);
 although one could easily select it based on other well attributes,
 such as the IDWR site number (`SITEIDIDWR`), PEST identifier (`PEST`),
 common well name (`WELLNUMBER`), or its geographical coordinates.
+Draw the point locations of all observation wells within the aquifer system.
+
+```{r leaflet_wells, fig.width=5.00, fig.height=5.00, eval=TRUE}
+site.no <- "432650114144701"
+w <- well[!grepl("driller well$", well$desc), ]
+is.well <- w$SiteNo %in% site.no
+crs <- CRS("+init=epsg:4326")
+ll <- coordinates(spTransform(w, crs)); colnames(ll) <- NULL
+file <- sprintf("markers/marker-%s.png", c("red", "blue"))
+icon <- icons(iconUrl = ifelse(is.well, file[1], file[2]),
+              iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
+map <- leaflet()
+map <- setView(map, lng = ll[is.well, 1], lat = ll[is.well, 2], zoom = 15)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addPolylines(map, data = spTransform(alluvium.extent, crs),
+                    weight = 3, color = "#000000")
+txt <- sprintf("Site Number: %s<br/>Site Name: %s", w$SiteNo, w$WELLNUMBER)
+map <- addMarkers(map, lng = ll[, 1], lat = ll[, 2], popup = txt, icon = icon)
+map
+```
+
+<p></p>
+
+Extract simulated and measured head data for selected well.
 
 ```{r extract_well_data, eval=TRUE}
-site.no <- "432650114144701"
 w <- well[well$SiteNo %in% site.no, ]
 rb <- get(paste0("rs.heads.lay", w@data$lay))
 ext <- t(extract(rb, coordinates(w)))
 head.sim <- data.frame(Date = as.Date(rownames(ext)), head.sim = ext[, 1])
 head.obs <- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
-site.label <- paste("USGS NWIS Site No.", w@data$SiteNo)
-print(site.label)
 ```
-
-Draw the point location of the well site within the aquifer system.
-
-```{r leaflet_map, fig.width=5.00, fig.height=5.00, eval=TRUE}
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
-opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
-crs <- CRS("+init=epsg:4326")
-ll  <- coordinates(spTransform(w, crs))
-map <- leaflet()
-map <- setView(map, lng = ll[1], lat = ll[2], zoom = 14)
-map <- addWMSTiles(map, url, options = opt, layers = "0")
-map <- addPolygons(map, data = spTransform(alluvium.extent, crs),
-                   color = "#FFFFFF", opacity = 0.7, fillOpacity = 0.1)
-map <- addMarkers(map, lng = ll[1], lat = ll[2], popup = site.label)
-map
-```
-
-<p></p>
 
 Finally, plot the measured and simulated groundwater-level hydrographs.
 

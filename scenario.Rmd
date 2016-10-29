@@ -3,16 +3,63 @@ title: "Scenario"
 ---
 
 ```{r set_knitr_options, include=FALSE}
-knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
+knitr::opts_chunk$set(eval=FALSE, dpi=100, fig.path="figures/")
 ```
 
 These instructions describe how to build, run, and analyze an example model scenario.
 The scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as "non-irrigated";
 that is, what happens when you voluntarily allow an irrigated parcel to go idle.
 Model boundary conditions are modified in the archived calibrated model to best represent this scenario.
-The idled land parcel (about 600 acres, or better yet 2.4-square kilometers) is shown in the following figure.
 
-| ![](images/scenario-desc_01.png)
+Startup an R session.
+Set the working directory to the local wrv-training repository, that is the "wrv-training" folder,
+by typing the following command in your R console and making sure to change the file path to the correct location:
+
+```{r set_wd, eval=TRUE}
+setwd("I:/Software/wrv-training")
+```
+
+Load the **wrv**,
+[**inlmisc**](https://CRAN.R-project.org/package=inlmisc),
+[**raster**](https://CRAN.R-project.org/package=raster),
+[**rgdal**](https://CRAN.R-project.org/package=rgdal), and
+[**leaflet**](https://CRAN.R-project.org/package=leaflet)
+packages into your current R environment, using
+
+```{r load_pkgs, message=FALSE, results="hide", eval=TRUE}
+packages <- c("wrv", "inlmisc", "raster", "rgdal", "leaflet")
+lapply(packages, library, character.only = TRUE)
+```
+
+Draw the idled land parcel (about 600 acres, or better yet 2.4-square kilometers) and the 2002 land status
+by pasting the following commands into your R console.
+
+```{r leaflet_idle, fig.width=5.00, fig.height=5.00, eval=TRUE}
+crs <- CRS("+init=epsg:4326")
+irr <- spTransform(irr.lands[["2002"]], crs)
+irr$Status <- factor(irr$Status, levels = c(levels(irr$Status), "idled"))
+idx <- c(980, 981, 993, 1002, 1005, 1007, 1044, 1049, 1052,
+         1059, 1061, 1065, 1066, 1067, 1073, 1074, 1076)
+irr$Status[idx] <- "idled"
+ll <- colMeans(coordinates(irr[idx, ]))
+ext <- spTransform(alluvium.extent, crs)
+irr <- intersect(irr, ext)
+Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
+map <- leaflet()
+map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addPolygons(map, data = irr, stroke = FALSE, fillOpacity = 0.6,
+                   color = Pal(irr$Status))
+map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
+map <- addLegend(map, pal = Pal, values = irr$Status, opacity = 0.6)
+map
+```
+
+<p></p>
+
+## File Changes
 
 Changes to [unprocessed-data files](https://github.com/USGS-R/wrv/tree/master/inst/extdata) include:
 
@@ -36,22 +83,6 @@ but may want to considered for modification in similar types of scenarios includ
 
   * Groundwater diversions ("div.gw.csv")---if there had been "measured" groundwater diversions
     associated with the parcel, those would need to be removed.
-
-Startup an R session.
-Set the working directory to the local wrv-training repository, that is the "wrv-training" folder,
-by typing the following command in your R console and making sure to change the file path to the correct location:
-
-```{r set_wd, eval=TRUE}
-setwd("I:/Software/wrv-training")
-```
-
-Load the **wrv**, [**inlmisc**](https://CRAN.R-project.org/package=inlmisc),
-[**raster**](https://CRAN.R-project.org/package=raster), and [**rgdal**](https://CRAN.R-project.org/package=rgdal)
-packages into your current R environment, using
-
-```{r load_pkgs, message=FALSE, results="hide", eval=TRUE}
-lapply(c("wrv", "inlmisc", "raster", "rgdal"), library, character.only = TRUE)
-```
 
 ## Code Chunks
 
@@ -78,8 +109,8 @@ print(chunk)
 ## Create Modified Datasets
 
 Every time we create a modified dataset it masks its **wrv**-package version.
-The R script for creating the modified datasets is primarily based on code chunks in Appendix C.
-Run (that is, parse and evaluate) the code chunk named "setup" in Appendix C using the following command:
+The R script for creating the modified datasets is primarily based on code chunks in appendix C.
+Run (that is, parse and evaluate) the code chunk named "setup" in appendix C using the following command:
 
 ```{r eval_setup, message=FALSE}
 eval(parse(text = app.c.chunks[["setup"]]))
@@ -195,7 +226,7 @@ Let's start model processing with a clean R environment.
 Remove all objects created during the previous instructions and reload our modified datasets.
 
 ```{r clean_env, results="hide", eval=TRUE}
-rm(list = ls()[ls() != "app.d.chunks"])
+rm(list = ls()[!ls() %in% "app.d.chunks"])
 files <- list.files("data", pattern = "*.rda$", full.names = TRUE)
 lapply(files, load, envir = .GlobalEnv)
 ```
@@ -259,7 +290,7 @@ setwd(wd)
 Read water-budget output for the archived calibrated simulation,
 located in the "archive" folder, and save the results for later use.
 To do so, run the code chunks named "read_budget_1" and "read_budget_2"
-in Appendix D using the following commands:
+in appendix D using the following commands:
 
 ```{r eval_budget_archive, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "archive"  # code below is dependent on this object
@@ -345,7 +376,7 @@ Read simulated hydraulic heads for archived simulation, located in "archive" fol
 
 Read the simulated hydraulic head (head) output for the archived calibrated model,
 located in the "archive" folder, and save the results for later use.
-To do so, run the code chunk named "read_head" in Appendix D using the following commands:
+To do so, run the code chunk named "read_head" in appendix D using the following commands:
 
 ```{r eval_head_archive, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "archive"
@@ -373,30 +404,27 @@ head2 <- rs.heads.lay1[["2007-08-16"]]
 
 ### Compare head distributions
 
-A comparison between head distributions is made by constructing the following figure.
+A comparison between spatial distributions of head is made by constructing the following figure.
 
 **Figure:** Simulated water table difference, defined as the archived water table subtracted from
 the modified water table, during August 16, 2007.
 
-```{r map_water_tbl_diff, fig.width=7.16, fig.height=5.31, eval=TRUE}
+```{r leaflet_head, fig.width=5.00, fig.height=5.00, eval=TRUE}
+crs <- CRS("+init=epsg:4326")
+ext <- spTransform(alluvium.extent, crs)
+ll  <- coordinates(ext)
 r <- head2 - head1
-r[] <- r[] * 3.28084
-usr <- c(2472304, 2497015, 1343284, 1358838)
-r <- crop(r, extent(usr))
-zlim <- range(pretty(range(r[], na.rm = TRUE)))
-ratio <- abs(zlim[1]) / diff(zlim)
-Pal <- function(...) {
-  Pal1 <- colorRampPalette(c("#F02311", "#F02311", "#FFD0D4"))
-  Pal2 <- colorRampPalette(c("#FCFBE3", "#67A9CF", "#025D8C"))
-  n1 <- round(... * ratio)
-  n2 <- ... - n1
-  return(c(Pal1(n1), Pal2(n2)))
-}
-explanation <- "Hydraulic head differnce, in feet"
-PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim, bg.image = hill.shading,
-        bg.image.alpha = 0.6, pal = Pal, dms.tick = TRUE, max.dev.dim = c(43, 56),
-        rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        explanation = explanation, credit = "", contour.lines = list(col = "#1F1F1F"))
-legend("topright", "Contour line", col="#1F1F1F", lty = 1, lwd = 0.5,
-       inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = "#FFFFFFCD")
+r[] <- round(r[] * 3.28084, digits = 3)
+r <- projectRaster(r, crs = crs, method = "ngb")
+Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
+map <- leaflet()
+map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)
+map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
+map <- addLegend(map, pal = Pal, values = r[], opacity = 0.8,
+                 title = "Head Diff.<br/>(feet)")
+map
 ```
