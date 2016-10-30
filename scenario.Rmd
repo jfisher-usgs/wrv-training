@@ -6,7 +6,7 @@ title: "Scenario"
 knitr::opts_chunk$set(eval=FALSE, dpi=100, fig.path="figures/")
 ```
 
-These instructions describe how to build, run, and analyze an example model scenario.
+These instructions describe how to build, run, and analyze an example water use scenario.
 The scenario describes the effects of allowing an existing parcel of irrigated land to be reclassified as "non-irrigated";
 that is, what happens when you voluntarily allow an irrigated parcel to go idle.
 Model boundary conditions are modified in the archived calibrated model to best represent this scenario.
@@ -43,7 +43,7 @@ idx <- c(980, 981, 993, 1002, 1005, 1007, 1044, 1049, 1052,
 irr$Status[idx] <- "idled"
 ll <- colMeans(coordinates(irr[idx, ]))
 ext <- spTransform(alluvium.extent, crs)
-irr <- intersect(irr, ext)
+irr <- crop(irr, extent(ext))
 Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
 map <- leaflet()
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
