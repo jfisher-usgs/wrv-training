@@ -31,7 +31,7 @@ packages <- c("wrv", "inlmisc", "raster", "rgdal", "leaflet")
 lapply(packages, library, character.only = TRUE)
 ```
 
-Draw the idled land parcel (about 600 acres, or better yet 2.4-square kilometers) and the 2002 land status
+Draw a map the idled land parcel (about 600 acres, or better yet 2.4-square kilometers) and the 2002 land status
 by pasting the following commands into your R console.
 
 ```{r leaflet_idle, fig.width=5.00, fig.height=5.00, eval=TRUE}
@@ -381,12 +381,7 @@ To do so, run the code chunk named "read_head" in appendix D using the following
 ```{r eval_head_archive, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "archive"
 eval(parse(text = app.d.chunks[["read_head"]]))
-```
-
-And save the simulated heads in model layer 1 on August 16, 2007 to an R object named `head1` using
-
-```{r save_head_archive, eval=TRUE}
-head1 <- rs.heads.lay1[["2007-08-16"]]
+head1 <- rs.heads.lay1
 ```
 
 Next, read the head output for the scenario simulation, located in the "model" folder.
@@ -394,30 +389,23 @@ Next, read the head output for the scenario simulation, located in the "model" f
 ```{r eval_head_scenario, message=FALSE, warning=FALSE, eval=TRUE}
 dir.run <- "model"
 eval(parse(text = app.d.chunks[["read_head"]]))
-```
-
-And save the simulated heads in model layer 1 on August 16, 2007 to an R object named `head2` using
-
-```{r save_head_scenario, eval=TRUE}
-head2 <- rs.heads.lay1[["2007-08-16"]]
+head2 <- rs.heads.lay1
 ```
 
 ### Compare head distributions
 
-A comparison between spatial distributions of head is made by constructing the following figure.
-
-**Figure:** Simulated water table difference, defined as the archived water table subtracted from
-the modified water table, during August 16, 2007.
+Draw a map the simulated water table difference,
+defined as the archived water table subtracted from the modified water table, during August 16, 2007.
+Add an observation point located at a longitude and latitude of -114.222664 and  43.383047 decimal degrees, respectively.
 
 ```{r leaflet_head, fig.width=5.00, fig.height=5.00, eval=TRUE}
-crs <- CRS("+init=epsg:4326")
-ext <- spTransform(alluvium.extent, crs)
-ll  <- coordinates(ext)
-r <- head2 - head1
+ext <- spTransform(alluvium.extent, CRS("+init=epsg:4326"))
+r <- head2[["2007-08-16"]] - head1[["2007-08-16"]]
 r[] <- round(r[] * 3.28084, digits = 3)
-r <- projectRaster(r, crs = crs, method = "ngb")
+r <- projectRaster(r, crs = CRS("+init=epsg:4326"), method = "ngb")
 Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
 map <- leaflet()
+ll  <- coordinates(ext)
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
 url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
@@ -426,5 +414,26 @@ map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)
 map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
 map <- addLegend(map, pal = Pal, values = r[], opacity = 0.8,
                  title = "Head Diff.<br/>(feet)")
+ll <- c(-114.222664, 43.383047)
+txt <- sprintf("<b>Longitude:</b> %s<br/><b>Latitude:</b> %s", ll[1], ll[2])
+icon <- icons(iconUrl = "markers/marker-blue.png",
+              iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
+map <- addMarkers(map, lng = ll[1], lat = ll[2], popup = txt, icon = icon)
 map
+```
+
+<p></p>
+
+Finally, at the observation point, plot the head difference in model layer 1 over time.
+
+```{r graph_head_diff, fig.width=7.16, fig.height=3.50, eval=TRUE}
+pnt <- data.frame(lon = ll[1], lat = ll[2])
+coordinates(pnt) <- c("lon", "lat")
+proj4string(pnt) <- CRS("+init=epsg:4326")
+pnt <- spTransform(pnt, crs(hill.shading))
+d <- t(extract(head2, pnt) - extract(head1, pnt))
+d <- data.frame(Date = as.Date(rownames(d)), difference = d)
+ylab <- paste("Hydraulic head difference, in", c("meters", "feet"))
+PlotGraph(d, ylab = ylab, col = "#025D8C", conversion.factor = 3.28084,
+          center.date.labels = TRUE)
 ```
