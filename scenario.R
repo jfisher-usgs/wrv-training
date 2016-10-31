@@ -5,7 +5,30 @@ knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 setwd("I:/Software/wrv-training")
 
 ## ----load_pkgs, message=FALSE, results="hide", eval=TRUE-----------------
-lapply(c("wrv", "inlmisc", "raster", "rgdal"), library, character.only = TRUE)
+packages <- c("wrv", "inlmisc", "raster", "rgdal", "leaflet")
+lapply(packages, library, character.only = TRUE)
+
+## ----leaflet_idle, fig.width=5.00, fig.height=5.00, eval=TRUE------------
+crs <- CRS("+init=epsg:4326")
+irr <- spTransform(irr.lands[["2002"]], crs)
+irr$Status <- factor(irr$Status, levels = c(levels(irr$Status), "idled"))
+idx <- c(980, 981, 993, 1002, 1005, 1007, 1044, 1049, 1052,
+         1059, 1061, 1065, 1066, 1067, 1073, 1074, 1076)
+irr$Status[idx] <- "idled"
+ll <- colMeans(coordinates(irr[idx, ]))
+ext <- spTransform(alluvium.extent, crs)
+irr <- crop(irr, extent(ext))
+Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
+map <- leaflet()
+map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addPolygons(map, data = irr, stroke = FALSE, fillOpacity = 0.6,
+                   color = Pal(irr$Status))
+map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
+map <- addLegend(map, pal = Pal, values = irr$Status, opacity = 0.6)
+map
 
 ## ----read_code_chunks, eval=TRUE-----------------------------------------
 file <- system.file("doc", "sir20165080_AppendixC.R", package = "wrv")
@@ -63,7 +86,7 @@ eval(parse(text = app.c.chunks[["rs_entities_1"]]))
 eval(parse(text = app.c.chunks[["rs_rech_non_irr_1"]]))
 
 ## ----clean_env, results="hide", eval=TRUE--------------------------------
-rm(list = ls()[ls() != "app.d.chunks"])
+rm(list = ls()[!ls() %in% "app.d.chunks"])
 files <- list.files("data", pattern = "*.rda$", full.names = TRUE)
 lapply(files, load, envir = .GlobalEnv)
 
@@ -148,36 +171,44 @@ knitr::kable(d, format = "markdown", padding = 0, booktabs = TRUE, digits = 0,
 ## ----eval_head_archive, message=FALSE, warning=FALSE, eval=TRUE----------
 dir.run <- "archive"
 eval(parse(text = app.d.chunks[["read_head"]]))
-
-## ----save_head_archive, eval=TRUE----------------------------------------
-head1 <- rs.heads.lay1[["2007-08-16"]]
+head1 <- rs.heads.lay1
 
 ## ----eval_head_scenario, message=FALSE, warning=FALSE, eval=TRUE---------
 dir.run <- "model"
 eval(parse(text = app.d.chunks[["read_head"]]))
+head2 <- rs.heads.lay1
 
-## ----save_head_scenario, eval=TRUE---------------------------------------
-head2 <- rs.heads.lay1[["2007-08-16"]]
+## ----leaflet_head, fig.width=5.00, fig.height=5.00, eval=TRUE------------
+ext <- spTransform(alluvium.extent, CRS("+init=epsg:4326"))
+r <- head2[["2007-08-16"]] - head1[["2007-08-16"]]
+r[] <- round(r[] * 3.28084, digits = 3)
+r <- projectRaster(r, crs = CRS("+init=epsg:4326"), method = "ngb")
+Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
+map <- leaflet()
+ll  <- coordinates(ext)
+map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)
+map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
+map <- addLegend(map, pal = Pal, values = r[], opacity = 0.8,
+                 title = "Head Diff.<br/>(feet)")
+ll <- c(-114.222664, 43.383047)
+txt <- sprintf("<b>Longitude:</b> %s<br/><b>Latitude:</b> %s", ll[1], ll[2])
+icon <- icons(iconUrl = "markers/marker-blue.png",
+              iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
+map <- addMarkers(map, lng = ll[1], lat = ll[2], popup = txt, icon = icon)
+map
 
-## ----map_water_tbl_diff, fig.width=7.16, fig.height=5.31, eval=TRUE------
-r <- head2 - head1
-r[] <- r[] * 3.28084
-usr <- c(2472304, 2497015, 1343284, 1358838)
-r <- crop(r, extent(usr))
-zlim <- range(pretty(range(r[], na.rm = TRUE)))
-ratio <- abs(zlim[1]) / diff(zlim)
-Pal <- function(...) {
-  Pal1 <- colorRampPalette(c("#F02311", "#F02311", "#FFD0D4"))
-  Pal2 <- colorRampPalette(c("#FCFBE3", "#67A9CF", "#025D8C"))
-  n1 <- round(... * ratio)
-  n2 <- ... - n1
-  return(c(Pal1(n1), Pal2(n2)))
-}
-explanation <- "Hydraulic head differnce, in feet"
-PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim, bg.image = hill.shading,
-        bg.image.alpha = 0.6, pal = Pal, dms.tick = TRUE, max.dev.dim = c(43, 56),
-        rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        explanation = explanation, credit = "", contour.lines = list(col = "#1F1F1F"))
-legend("topright", "Contour line", col="#1F1F1F", lty = 1, lwd = 0.5,
-       inset = 0.02, cex = 0.7, box.lty = 1, box.lwd = 0.5, bg = "#FFFFFFCD")
+## ----graph_head_diff, fig.width=7.16, fig.height=3.50, eval=TRUE---------
+pnt <- data.frame(lon = ll[1], lat = ll[2])
+coordinates(pnt) <- c("lon", "lat")
+proj4string(pnt) <- CRS("+init=epsg:4326")
+pnt <- spTransform(pnt, crs(hill.shading))
+d <- t(extract(head2, pnt) - extract(head1, pnt))
+d <- data.frame(Date = as.Date(rownames(d)), difference = d)
+ylab <- paste("Hydraulic head difference, in", c("meters", "feet"))
+PlotGraph(d, ylab = ylab, col = "#025D8C", conversion.factor = 3.28084,
+          center.date.labels = TRUE)
 

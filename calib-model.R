@@ -5,7 +5,8 @@ knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 setwd("I:/Software/wrv-training")
 
 ## ----load_pkgs, message=FALSE, results="hide", eval=TRUE-----------------
-lapply(c("wrv", "inlmisc", "raster", "leaflet"), library, character.only = TRUE)
+packages <- c("wrv", "inlmisc", "raster", "leaflet")
+lapply(packages, library, character.only = TRUE)
 
 ## ----downlaod_inputs, results="hide"-------------------------------------
 url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
@@ -177,28 +178,33 @@ d <- aggregate(head[, c("head.obs", "head.sim", "head.res")],
                by = list(PESTNAME = head$PESTNAME), mean)
 well@data <- dplyr::left_join(well@data, d, by = "PESTNAME")
 
+## ----leaflet_wells, fig.width=5.00, fig.height=5.00, eval=TRUE-----------
+site.no <- "434104114241301"
+w <- well[!grepl("driller well$", well$desc), ]
+is.well <- w$SiteNo %in% site.no
+crs <- CRS("+init=epsg:4326")
+ll <- coordinates(spTransform(w, crs)); colnames(ll) <- NULL
+file <- sprintf("markers/marker-%s.png", c("red", "blue"))
+icon <- icons(iconUrl = ifelse(is.well, file[1], file[2]),
+              iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
+map <- leaflet()
+map <- setView(map, lng = ll[is.well, 1], lat = ll[is.well, 2], zoom = 13)
+url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
+map <- addWMSTiles(map, url, options = opt, layers = "0")
+map <- addPolylines(map, data = spTransform(alluvium.extent, crs),
+                    weight = 3, color = "#000000")
+txt <- sprintf("<b>Site Number:</b> %s<br/><b>Site Name:</b> %s",
+               w$SiteNo, w$WELLNUMBER)
+map <- addMarkers(map, lng = ll[, 1], lat = ll[, 2], popup = txt, icon = icon)
+map
+
 ## ----extract_well_data, eval=TRUE----------------------------------------
-site.no <- "432650114144701"
 w <- well[well$SiteNo %in% site.no, ]
 rb <- get(paste0("rs.heads.lay", w@data$lay))
 ext <- t(extract(rb, coordinates(w)))
 head.sim <- data.frame(Date = as.Date(rownames(ext)), head.sim = ext[, 1])
 head.obs <- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
-site.label <- paste("USGS NWIS Site No.", w@data$SiteNo)
-print(site.label)
-
-## ----leaflet_map, fig.width=5.00, fig.height=5.00, eval=TRUE-------------
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
-opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
-crs <- CRS("+init=epsg:4326")
-ll  <- coordinates(spTransform(w, crs))
-map <- leaflet()
-map <- setView(map, lng = ll[1], lat = ll[2], zoom = 14)
-map <- addWMSTiles(map, url, options = opt, layers = "0")
-map <- addPolygons(map, data = spTransform(alluvium.extent, crs),
-                   color = "#FFFFFF", opacity = 0.7, fillOpacity = 0.1)
-map <- addMarkers(map, lng = ll[1], lat = ll[2], popup = site.label)
-map
 
 ## ----graph_head, fig.width=7.16, fig.height=3.50, eval=TRUE--------------
 xlim <- range(head.sim$Date)

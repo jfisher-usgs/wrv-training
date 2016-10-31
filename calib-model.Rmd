@@ -3,7 +3,7 @@ title: "Calibrated Model"
 ---
 
 ```{r set_options, include=FALSE}
-knitr::opts_chunk$set(eval=FALSE, dpi=100, fig.path="figures/")
+knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 ```
 
 These instructions describe how to run and analyze the archived calibrated model.
