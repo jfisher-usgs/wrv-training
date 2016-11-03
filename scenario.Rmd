@@ -76,7 +76,7 @@ Changes to [unprocessed-data files](https://github.com/USGS-R/wrv/tree/master/in
 * Well sites ("extdata/div/pod.wells.zip")---removed sites located in parcel.
 
 Files that did not need to be modified for this scenario,
-but may want to considered for modification in similar types of scenarios include:
+but may want to be considered for modification in similar types of scenarios include:
 
   * Surface water diversions ("div.sw.csv")---we assumed surface water associated
     with the idled parcel is now delivered to other "junior" users within the same canal service area.
