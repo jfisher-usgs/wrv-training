@@ -64,7 +64,7 @@ Files used in this training class were placed online in the
 Create a copy of the latest version of the repository on your computer using R.
 To do so, first specify where you want to place the repository in your local file system.
 Type the following commands substituting in the desired path;
-for example, I changed the path from `"<path/to/repository>"` to `"I:/Software/wrv-training"`
+for example, I changed the path from `"<path/to/repository>"` to `"D:/WORK/Repos/wrv-training"`
 making sure to use the forward slash (/) to separate folder names:
 
 ```{r}

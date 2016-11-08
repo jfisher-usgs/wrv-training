@@ -2,7 +2,7 @@
 knitr::opts_chunk$set(eval=TRUE, dpi=100, fig.path="figures/")
 
 ## ----set_wd, eval=TRUE---------------------------------------------------
-setwd("I:/Software/wrv-training")
+setwd("D:/WORK/Repos/wrv-training")
 
 ## ----load_pkgs, message=FALSE, results="hide", eval=TRUE-----------------
 packages <- c("wrv", "inlmisc", "raster", "leaflet")
