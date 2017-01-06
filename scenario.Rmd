@@ -47,7 +47,7 @@ irr <- crop(irr, extent(ext))
 Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
 map <- leaflet()
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolygons(map, data = irr, stroke = FALSE, fillOpacity = 0.6,
@@ -277,7 +277,7 @@ UpdateWaterBudget("model", id, qa.tables = "english", pod.wells = pod.wells,
 
 ### Run MODFLOW
 
-Run [MODFLOW-USG](http://water.usgs.gov/ogw/mfusg/) using model scenario conditions.
+Run [MODFLOW-USG](https://water.usgs.gov/ogw/mfusg/) using model scenario conditions.
 
 ```{r run_modflow}
 wd <- setwd("model")
@@ -407,7 +407,7 @@ Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
 map <- leaflet()
 ll  <- coordinates(ext)
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)

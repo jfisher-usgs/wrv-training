@@ -122,7 +122,7 @@ PlotMap(r, breaks = breaks, xlim = usr[1:2], ylim = usr[3:4],
         pal = Pal, explanation = explanation,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
         labels = list(at = at, labels = labels), credit = credit,
-        contour.lines = list(col = "#1F1F1F"))
+        contour.lines = list(col = "#1F1F1F"), scale.loc = "bottomleft")
 plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
 text(cities, labels = cities@data$FEATURE_NA, col = "#333333", cex = 0.5,
      pos = 1, offset = 0.4)
@@ -238,7 +238,7 @@ PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim,
         bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE,
         max.dev.dim = c(43, 56), credit = credit,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        contour.lines = list(col = "#1F1F1F"),
+        contour.lines = list(col = "#1F1F1F"), scale.loc = "bottomleft",
         explanation = "Hydraulic head, in meters above the NAVD 88")
 lines(tran, col = "#F02311")
 xy <- as(tran, "SpatialPoints")
@@ -318,7 +318,7 @@ icon <- icons(iconUrl = ifelse(is.well, file[1], file[2]),
               iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
 map <- leaflet()
 map <- setView(map, lng = ll[is.well, 1], lat = ll[is.well, 2], zoom = 13)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolylines(map, data = spTransform(alluvium.extent, crs),
@@ -342,7 +342,7 @@ head.obs <- head[head$PESTNAME == w@data$PESTNAME, , drop = FALSE]
 ```
 
 Finally, plot the measured and simulated groundwater-level hydrographs.
-As the [model report](http://dx.doi.org/10.3133/sir20165080 "USGS Scientific Investigations Report") explains (p. 31),
+As the [model report](https://dx.doi.org/10.3133/sir20165080 "USGS Scientific Investigations Report") explains (p. 31),
 simulated hydraulic heads in the tributary canyons should be considered less reliable than in the main valley floor.
 
 ```{r graph_head, fig.width=7.16, fig.height=3.50, eval=TRUE}
