@@ -21,7 +21,7 @@ irr <- crop(irr, extent(ext))
 Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
 map <- leaflet()
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolygons(map, data = irr, stroke = FALSE, fillOpacity = 0.6,
@@ -187,7 +187,7 @@ Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
 map <- leaflet()
 ll  <- coordinates(ext)
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)

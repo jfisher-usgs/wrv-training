@@ -2,7 +2,7 @@
 knitr::opts_chunk$set(eval=FALSE)
 
 ## ------------------------------------------------------------------------
-repos <- c(GRAN = "http://owi.usgs.gov/R", CRAN = "https://cloud.r-project.org/")
+repos <- c(GRAN = "https://owi.usgs.gov/R", CRAN = "https://cloud.r-project.org/")
 update.packages(ask = FALSE, repos = repos)
 install.packages("wrv", repos = repos, dependencies = TRUE)
 

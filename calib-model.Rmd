@@ -28,11 +28,11 @@ lapply(packages, library, character.only = TRUE)
 ## Get Model Input Files
 
 Download model input files for the calibrated model,
-these files were archived on the USGS Water Resources [NSDI Node](http://dx.doi.org/10.5066/F7C827DT).
+these files were archived on the USGS Water Resources [NSDI Node](https://dx.doi.org/10.5066/F7C827DT).
 Use the following commands to write model input files to the "archive" folder in your working directory.
 
 ```{r downlaod_inputs, results="hide"}
-url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
+url <- "https://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
 file <- file.path(tempdir(), basename(url))
 download.file(url, file)
 files <- unzip(file, exdir = tempdir())

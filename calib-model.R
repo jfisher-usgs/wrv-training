@@ -9,7 +9,7 @@ packages <- c("wrv", "inlmisc", "raster", "leaflet")
 lapply(packages, library, character.only = TRUE)
 
 ## ----downlaod_inputs, results="hide"-------------------------------------
-url <- "http://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
+url <- "https://water.usgs.gov/GIS/dsdl/gwmodels/SIR2016-5080/model.zip"
 file <- file.path(tempdir(), basename(url))
 download.file(url, file)
 files <- unzip(file, exdir = tempdir())
@@ -63,7 +63,7 @@ PlotMap(r, breaks = breaks, xlim = usr[1:2], ylim = usr[3:4],
         pal = Pal, explanation = explanation,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
         labels = list(at = at, labels = labels), credit = credit,
-        contour.lines = list(col = "#1F1F1F"))
+        contour.lines = list(col = "#1F1F1F"), scale.loc = "bottomleft")
 plot(cities, pch = 15, cex = 0.8, col = "#333333", add = TRUE)
 text(cities, labels = cities@data$FEATURE_NA, col = "#333333", cex = 0.5,
      pos = 1, offset = 0.4)
@@ -126,7 +126,7 @@ PlotMap(r, xlim = usr[1:2], ylim = usr[3:4], zlim = zlim,
         bg.image = hill.shading, bg.image.alpha = 0.6, dms.tick = TRUE,
         max.dev.dim = c(43, 56), credit = credit,
         rivers = list(x = streams.rivers), lakes = list(x = lakes),
-        contour.lines = list(col = "#1F1F1F"),
+        contour.lines = list(col = "#1F1F1F"), scale.loc = "bottomleft",
         explanation = "Hydraulic head, in meters above the NAVD 88")
 lines(tran, col = "#F02311")
 xy <- as(tran, "SpatialPoints")
@@ -189,7 +189,7 @@ icon <- icons(iconUrl = ifelse(is.well, file[1], file[2]),
               iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
 map <- leaflet()
 map <- setView(map, lng = ll[is.well, 1], lat = ll[is.well, 2], zoom = 13)
-url <- "http://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
+url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
 opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
 map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolylines(map, data = spTransform(alluvium.extent, crs),
