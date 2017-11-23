@@ -214,7 +214,7 @@ ylab <- paste("Hydraulic head in", c("meters", "feet"), "above the NAVD88")
 m.to.ft <- 3.280839895
 PlotGraph(head.sim, xlim = xlim, ylim = ylim, ylab = ylab, col = cols[2],
           conversion.factor = m.to.ft, bg.polygon = bg.polygon,
-          center.date.labels = TRUE)
+          center.date.labels = TRUE, seq.date.by = "year")
 lines(x = as.Date(head.obs$DateTime), y = head.obs$head.obs,
       type = "b", pch = 20, lwd = 0.5, col = cols[1])
 labs <- c("Measured groundwater level", "Simulated groundwater level",

@@ -9,6 +9,8 @@ navbar:
       href: calib-model.html
     - text: "Scenario"
       href: scenario.html
+    - text: "Reproducibility"
+      href: reproducibility.html
 
 output_dir: "."
 output:

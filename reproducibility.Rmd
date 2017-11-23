@@ -1,0 +1,20 @@
+---
+title: "Reproducibility"
+output:
+  html_document:
+    fig_caption: false
+---
+
+This website was written in [Rmarkdown](http://rmarkdown.rstudio.com/) and
+rendered as a static website using the [rmarkdown](https://CRAN.R-project.org/package=rmarkdown) package.
+Website files are hosted using [GitHub Pages](https://pages.github.com/)
+and the complete source is available on [GitHub](https://github.com/jfisher-usgs/wrv-training).
+
+## R Session Information
+
+The R session information when compiling this website is shown below.
+
+```{r, echo=FALSE, collapse=TRUE}
+options(width=80)
+devtools::session_info()
+```

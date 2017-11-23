@@ -11,7 +11,7 @@
 
 
 
-<title>Overview</title>
+<title>Reproducibility</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -306,39 +306,79 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Overview</h1>
+<h1 class="title toc-ignore">Reproducibility</h1>
 
 </div>
 
 
-<p>During the course of your training in the Wood River Valley (WRV) groundwater-flow model, you will learn to run and analyze the <a href="calib-model.html">calibrated model</a> and adapt the model for a water use <a href="scenario.html">scenario</a>. The groundwater-flow model is described in the associated <a href="https://dx.doi.org/10.3133/sir20165080" title="USGS Scientific Investigations Report">model report</a> and <a href="https://dx.doi.org/10.5066/F7C827DT" title="USGS Data Release">model archive</a>. Processing programs and unprocessed data sets for the model are bundled together in an <a href="https://www.r-project.org/">R</a> package named <strong>wrv</strong>—the file repository for this package is located on <a href="https://github.com/USGS-R/wrv">GitHub</a>. Included in the <strong>wrv</strong> package is <a href="https://water.usgs.gov/ogw/mfusg/" title="MODFLOW-USG">MODFLOW-USG</a> version 1.3, a U.S. Geological Survey (USGS) computer code that solves the groundwater-flow equation.</p>
-<div id="hardware" class="section level2">
-<h2>Hardware</h2>
-<p>Requires an internet connection and about 16 gigabytes of memory.</p>
-</div>
-<div id="software" class="section level2">
-<h2>Software</h2>
-<p>If R (version 3.3 or greater) is not already installed on your computer, download and install the latest binary distribution from the <strong>C</strong>omprehensive <strong>R</strong> <strong>A</strong>rchive <strong>N</strong>etwork (<a href="https://cloud.r-project.org/">CRAN</a>). Installation instructions for installing R are located at <a href="https://jfisher-usgs.github.io/r-workshop/software.html#r" class="uri">https://jfisher-usgs.github.io/r-workshop/software.html#r</a>. R should be accessible from the start menu, desktop shortcut, or command shell. Assuming you installed R on a 64-bit operating system (OS), two versions of R are made available, that is, a 32-bit and 64-bit version. The 64-bit version of R (R x64) is preferred. An introduction to the R-programming language is provided at <a href="https://jfisher-usgs.github.io/r-workshop" class="uri">https://jfisher-usgs.github.io/r-workshop</a>.</p>
-<p>Startup an R session. Extend the capabilities of R by installing the R-package <strong>wrv</strong>. You can install the stable version of <strong>wrv</strong> from the <strong>G</strong>eological Survey <strong>R</strong> <strong>A</strong>rchive <strong>N</strong>etwork (<a href="https://owi.usgs.gov/R/gran.html">GRAN</a>), and its dependencies from CRAN, by pasting the following commands into your R console:</p>
-<pre class="r"><code>repos &lt;- c(GRAN = &quot;https://owi.usgs.gov/R&quot;, CRAN = &quot;https://cloud.r-project.org/&quot;)
-update.packages(ask = FALSE, repos = repos)
-install.packages(&quot;wrv&quot;, repos = repos, dependencies = TRUE)</code></pre>
-<p>You will only need to install R packages once on your computer. To ensure that everything got installed properly, load the <strong>wrv</strong> package in your current R session using</p>
-<pre class="r"><code>library(&quot;wrv&quot;)</code></pre>
-</div>
-<div id="files" class="section level2">
-<h2>Files</h2>
-<p>Files used in this training class were placed online in the <a href="https://github.com/jfisher-usgs/wrv-training">wrv-training repository</a>. Create a copy of the latest version of the repository on your computer using R. To do so, first specify where you want to place the repository in your local file system. Type the following commands substituting in the desired path; for example, I changed the path from <code>&quot;&lt;path/to/repository&gt;&quot;</code> to <code>&quot;D:/WORK/Repos/wrv-training&quot;</code> making sure to use the forward slash (/) to separate folder names:</p>
-<pre class="r"><code>path &lt;- &quot;&lt;path/to/repository&gt;&quot;
-dir.create(path, recursive = TRUE)</code></pre>
-<p>Next, copy the remote repository to your computer, using</p>
-<pre class="r"><code>git2r::clone(&quot;https://github.com/jfisher-usgs/wrv-training.git&quot;, path)</code></pre>
-<p>All subsequent R instructions require the <em>working directory</em> be set to the local wrv-training repository every time you start an R session. A working directory allows us to use relative paths instead of full absolute paths in our R scripts. An absolute path points to the same location in a file system, regardless of the current working directory. By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path. Use the <code>setwd</code> R function to set the working directory to the local wrv-training repository specified above.</p>
-<pre class="r"><code>setwd(path)</code></pre>
-</div>
-<div id="contact" class="section level2">
-<h2>Contact</h2>
-<p>This website is a work in progress. Please consider reporting bugs and asking for clarification on the <a href="https://github.com/jfisher-usgs/wrv-training/issues">Issues page</a>. Or you can just contact me via email at <a href="mailto:jfisher@usgs.gov">jfisher@usgs.gov</a></p>
+<p>This website was written in <a href="http://rmarkdown.rstudio.com/">Rmarkdown</a> and rendered as a static website using the <a href="https://CRAN.R-project.org/package=rmarkdown">rmarkdown</a> package. Website files are hosted using <a href="https://pages.github.com/">GitHub Pages</a> and the complete source is available on <a href="https://github.com/jfisher-usgs/wrv-training">GitHub</a>.</p>
+<div id="r-session-information" class="section level2">
+<h2>R Session Information</h2>
+<p>The R session information when compiling this website is shown below.</p>
+<pre><code>## Session info ------------------------------------------------------------------
+##  setting  value                       
+##  version  R version 3.4.2 (2017-09-28)
+##  system   x86_64, mingw32             
+##  ui       Rgui                        
+##  language (EN)                        
+##  collate  English_United States.1252  
+##  tz       America/Los_Angeles         
+##  date     2017-11-22
+## Packages ----------------------------------------------------------------------
+##  package     * version    date       source                               
+##  assertthat    0.2.0      2017-04-11 CRAN (R 3.4.2)                       
+##  backports     1.1.1      2017-09-25 CRAN (R 3.4.1)                       
+##  base        * 3.4.2      2017-09-28 local                                
+##  bindr         0.1        2016-11-13 CRAN (R 3.4.2)                       
+##  bindrcpp      0.2        2017-06-17 CRAN (R 3.4.2)                       
+##  checkmate     1.8.5      2017-10-24 CRAN (R 3.4.2)                       
+##  colorspace    1.3-2      2016-12-14 CRAN (R 3.4.2)                       
+##  compiler      3.4.2      2017-09-28 local                                
+##  crosstalk     1.0.0      2016-12-21 CRAN (R 3.4.2)                       
+##  datasets    * 3.4.2      2017-09-28 local                                
+##  devtools      1.13.4     2017-11-09 CRAN (R 3.4.2)                       
+##  digest        0.6.12     2017-01-27 CRAN (R 3.4.2)                       
+##  dplyr         0.7.4      2017-09-28 CRAN (R 3.4.2)                       
+##  evaluate      0.10.1     2017-06-24 CRAN (R 3.4.2)                       
+##  glue          1.2.0      2017-10-29 CRAN (R 3.4.2)                       
+##  graphics    * 3.4.2      2017-09-28 local                                
+##  grDevices   * 3.4.2      2017-09-28 local                                
+##  grid          3.4.2      2017-09-28 local                                
+##  htmltools     0.3.6      2017-04-28 CRAN (R 3.4.2)                       
+##  htmlwidgets   0.9        2017-07-10 CRAN (R 3.4.2)                       
+##  httpuv        1.3.5      2017-07-04 CRAN (R 3.4.2)                       
+##  igraph        1.1.2      2017-07-21 CRAN (R 3.4.2)                       
+##  inlmisc     * 0.3.5.9000 2017-11-22 Github (jfisher-usgs/inlmisc@bc19635)
+##  jsonlite      1.5        2017-06-01 CRAN (R 3.4.2)                       
+##  knitr         1.17       2017-08-10 CRAN (R 3.4.2)                       
+##  lattice       0.20-35    2017-03-25 CRAN (R 3.4.2)                       
+##  leaflet     * 1.1.0      2017-02-21 CRAN (R 3.4.2)                       
+##  magrittr      1.5        2014-11-22 CRAN (R 3.4.2)                       
+##  markdown      0.8        2017-04-20 CRAN (R 3.4.2)                       
+##  memoise       1.1.0      2017-04-21 CRAN (R 3.4.2)                       
+##  methods     * 3.4.2      2017-09-28 local                                
+##  mime          0.5        2016-07-07 CRAN (R 3.4.1)                       
+##  pkgconfig     2.0.1      2017-03-21 CRAN (R 3.4.2)                       
+##  R6            2.2.2      2017-06-17 CRAN (R 3.4.2)                       
+##  raster      * 2.6-7      2017-11-13 CRAN (R 3.4.2)                       
+##  Rcpp          0.12.13    2017-09-28 CRAN (R 3.4.2)                       
+##  rgdal         1.2-15     2017-10-30 CRAN (R 3.4.2)                       
+##  rgeos         0.3-26     2017-10-31 CRAN (R 3.4.2)                       
+##  rlang         0.1.4      2017-11-05 CRAN (R 3.4.2)                       
+##  rmarkdown   * 1.8        2017-11-17 CRAN (R 3.4.2)                       
+##  rprojroot     1.2        2017-01-16 CRAN (R 3.4.2)                       
+##  shiny         1.0.5      2017-08-23 CRAN (R 3.4.2)                       
+##  sp          * 1.2-5      2017-06-29 CRAN (R 3.4.2)                       
+##  stats       * 3.4.2      2017-09-28 local                                
+##  stringi       1.1.6      2017-11-17 CRAN (R 3.4.2)                       
+##  stringr       1.2.0      2017-02-18 CRAN (R 3.4.2)                       
+##  tibble        1.3.4      2017-08-22 CRAN (R 3.4.2)                       
+##  tools         3.4.2      2017-09-28 local                                
+##  utils       * 3.4.2      2017-09-28 local                                
+##  withr         2.1.0      2017-11-01 CRAN (R 3.4.2)                       
+##  wrv         * 1.1.3.9000 2017-11-22 local                                
+##  xtable        1.8-2      2016-02-05 CRAN (R 3.4.2)                       
+##  yaml          2.1.14     2016-11-12 CRAN (R 3.4.2)</code></pre>
 </div>
 
 <div id="page-footer">

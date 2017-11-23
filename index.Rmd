@@ -5,10 +5,6 @@ output:
     fig_caption: false
 ---
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(eval=FALSE)
-```
-
 During the course of your training in the Wood River Valley (WRV) groundwater-flow model,
 you will learn to run and analyze the [calibrated model](calib-model.html)
 and adapt the model for a water use [scenario](scenario.html).
@@ -46,7 +42,7 @@ You can install the stable version of **wrv** from the
 and its dependencies from CRAN,
 by pasting the following commands into your R console:
 
-```{r}
+```{r, eval=FALSE}
 repos <- c(GRAN = "https://owi.usgs.gov/R", CRAN = "https://cloud.r-project.org/")
 update.packages(ask = FALSE, repos = repos)
 install.packages("wrv", repos = repos, dependencies = TRUE)
@@ -56,7 +52,7 @@ You will only need to install R packages once on your computer.
 To ensure that everything got installed properly,
 load the **wrv** package in your current R session using
 
-```{r}
+```{r, message=FALSE, results="hide"}
 library("wrv")
 ```
 
@@ -70,14 +66,14 @@ Type the following commands substituting in the desired path;
 for example, I changed the path from `"<path/to/repository>"` to `"D:/WORK/Repos/wrv-training"`
 making sure to use the forward slash (/) to separate folder names:
 
-```{r}
+```{r, eval=FALSE}
 path <- "<path/to/repository>"
 dir.create(path, recursive = TRUE)
 ```
 
 Next, copy the remote repository to your computer, using
 
-```{r}
+```{r, eval=FALSE}
 git2r::clone("https://github.com/jfisher-usgs/wrv-training.git", path)
 ```
 
@@ -87,11 +83,11 @@ An absolute path points to the same location in a file system, regardless of the
 By contrast, a relative path starts from some given working directory, avoiding the need to provide the full absolute path.
 Use the `setwd` R function to set the working directory to the local wrv-training repository specified above.
 
-```{r}
+```{r, eval=FALSE}
 setwd(path)
 ```
 
-## Bugs
+## Contact
 
 This website is a work in progress.
 Please consider reporting bugs and asking for clarification on the

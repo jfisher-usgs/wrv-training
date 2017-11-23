@@ -204,5 +204,5 @@ d <- t(extract(head2, pnt) - extract(head1, pnt))
 d <- data.frame(Date = as.Date(rownames(d)), difference = d)
 ylab <- paste("Hydraulic head difference, in", c("meters", "feet"))
 PlotGraph(d, ylab = ylab, col = "#025D8C", conversion.factor = 3.28084,
-          center.date.labels = TRUE)
+          center.date.labels = TRUE, seq.date.by = "year")
 
