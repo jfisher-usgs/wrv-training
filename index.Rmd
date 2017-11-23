@@ -1,5 +1,8 @@
 ---
 title: "Overview"
+output:
+  html_document:
+    fig_caption: false
 ---
 
 ```{r, include=FALSE}

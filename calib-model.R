@@ -89,7 +89,7 @@ setwd(wd)
 heads <- ReadModflowBinary("archive/wrv_mfusg.hds")
 dates <- as.Date(vapply(heads, function(i) i$totim, 0),
                  origin = tr.stress.periods[1])
-layer <- vapply(heads, function(i) i$ilay, 0L)
+layer <- vapply(heads, function(i) i$layer, 0L)
 FUN <- function(i) {return(setValues(raster(rs), i$d))}
 rs.heads.lay1 <- mask(stack(lapply(heads[layer == 1L], FUN)), rs[["lay1.bot"]])
 rs.heads.lay2 <- mask(stack(lapply(heads[layer == 2L], FUN)), rs[["lay2.bot"]])
@@ -187,11 +187,8 @@ ll <- coordinates(spTransform(w, crs)); colnames(ll) <- NULL
 file <- sprintf("markers/marker-%s.png", c("red", "blue"))
 icon <- icons(iconUrl = ifelse(is.well, file[1], file[2]),
               iconWidth = 34, iconHeight = 34, iconAnchorX = 17, iconAnchorY = 34)
-map <- leaflet()
+map <- CreateWebMap("Topo")
 map <- setView(map, lng = ll[is.well, 1], lat = ll[is.well, 2], zoom = 13)
-url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
-opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
-map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolylines(map, data = spTransform(alluvium.extent, crs),
                     weight = 3, color = "#000000")
 txt <- sprintf("<b>Site Number:</b> %s<br/><b>Site Name:</b> %s",

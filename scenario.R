@@ -19,11 +19,8 @@ ll <- colMeans(coordinates(irr[idx, ]))
 ext <- spTransform(alluvium.extent, crs)
 irr <- crop(irr, extent(ext))
 Pal <- colorFactor(c("#1B9E77", "#7570B3", "#D95F02"), irr$Status)
-map <- leaflet()
+map <- CreateWebMap("Topo")
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 12)
-url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
-opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
-map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addPolygons(map, data = irr, stroke = FALSE, fillOpacity = 0.6,
                    color = Pal(irr$Status))
 map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
@@ -184,12 +181,9 @@ r <- head2[["2007-08-16"]] - head1[["2007-08-16"]]
 r[] <- round(r[] * 3.28084, digits = 3)
 r <- projectRaster(r, crs = CRS("+init=epsg:4326"), method = "ngb")
 Pal <- colorNumeric("Spectral", r[], na.color = "transparent")
-map <- leaflet()
+map <- CreateWebMap("Topo")
 ll  <- coordinates(ext)
 map <- setView(map, lng = ll[1], lat = ll[2], zoom = 11)
-url <- "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"
-opt <- WMSTileOptions(format = "image/png", transparent = TRUE)
-map <- addWMSTiles(map, url, options = opt, layers = "0")
 map <- addRasterImage(map, r, colors = Pal, opacity = 0.8)
 map <- addPolylines(map, data = ext, weight = 3, color = "#000000")
 map <- addLegend(map, pal = Pal, values = r[], opacity = 0.8,
