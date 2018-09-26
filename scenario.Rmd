@@ -19,7 +19,7 @@ Set the working directory to the local wrv-training repository, that is the "wrv
 by typing the following command in your R console and making sure to change the file path to the correct location:
 
 ```{r set_wd, eval=TRUE}
-setwd("D:/WORK/Repos/wrv-training")
+setwd("C:/Users/jfisher/Repos/wrv-training")
 ```
 
 Load the **wrv**,

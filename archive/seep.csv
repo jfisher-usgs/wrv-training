@@ -1,21 +1,20 @@
 EntityName,SeepFrac
-Aspen Hollow HOA,.10000000000
-Bannon,.10000000000
-Black,.10000000000
-Broadford,.10000000000
-Bypass Baseline,.60000000000
-Clear Creek J and C,.10000000000
-Clear Creek Jesinger,.10000000000
-Comstock,.10000000000
-Cove,0.1,.10000000000
-District,.60000000000
-Glendale,.10000000000
-Graff,.10000000000
-Hiawatha Hailey,.25000000000
-Hiawatha Other,.25000000000
-Hiawatha Valley Club,.25000000000
-Kilpatrick Iden,.25000000000
-Mid Valley Water Co,.10000000000
-Rinker,.10000000000
-Starweather,.10000000000
- 
+Aspen Hollow HOA,0.1
+Bannon,0.1
+Black,0.1
+Broadford,0.1
+Bypass Baseline,0.6
+Clear Creek J and C,0.1
+Clear Creek Jesinger,0.1
+Comstock,0.1
+Cove,0.1
+District,0.6
+Glendale,0.1
+Graff,0.1
+Hiawatha Hailey,0.25
+Hiawatha Other,0.25
+Hiawatha Valley Club,0.25
+Kilpatrick Iden,0.25
+Mid Valley Water Co,0.1
+Rinker,0.1
+Starweather,0.1
