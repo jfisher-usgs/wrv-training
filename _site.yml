@@ -1,7 +1,6 @@
 name: "wrv-training"
 navbar:
   title: "WRV Training"
-  type: default
   left:
     - text: "Overview"
       href: index.html
