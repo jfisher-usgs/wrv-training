@@ -111,9 +111,34 @@ wd <- setwd("model")
 system2(file.path(getwd(), "RunModflow.bat"), stdout = FALSE, stderr = FALSE)
 setwd(wd)
 
+
+
+
+
+
+
+
+
+
+
 ## ----eval_budget_archive, message=FALSE, warning=FALSE, eval=TRUE--------
 dir.run <- "archive"  # code below is dependent on this object
 eval(parse(text = unlist(app.d.chunks[paste0("read_budget_", 1:2)])))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## ----save_budget_archive, eval=TRUE--------------------------------------
 budget1 <- c("Water-table recharge"             = mean(d.rech$flow.in),
