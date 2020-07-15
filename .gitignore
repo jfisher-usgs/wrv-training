@@ -8,7 +8,7 @@ __packages
 *_rdx
 model/**
 archive/*.ref
-archive/*.csv
+archive/qa-*.csv
 archive/*.bat
 archive/*.reference
 archive/*.ba6
